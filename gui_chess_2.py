@@ -50,6 +50,16 @@ while running:
 
             if selected_piece:
 
+                # check the path of the selected piece
+
+
+                # check if capture position
+
+
+
+                # if empty path, move piece
+
+                # add a function to move piece on chess board and also update position of piece (Chess_Piece.position)
                 #move selected piece to the new spot
                 chess_board[row][col] = chess_board[selected_piece[0]][selected_piece[1]]
 

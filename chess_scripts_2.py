@@ -84,32 +84,92 @@ def initialize_chess_board(board_size):
 
     return chess_board
 
-def legal_moves(piece, new_x, new_y, all_game_pieces):
-    # this function will return True if move is allowed, False if not
+def check_piece_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y):
+    pass
 
-    # start with pawn movement and pawn capture
-    # check if this is a pawn
-    old_x, old_y = piece.position
-    if piece.piece == 'p':
-        # check if pawn is in original spot
-        if old_x == 1 and piece.player == 'white':
-            if (new_x == 2 or new_x == 3) and new_y == old_y:
-                return True
-        elif old_x == 6 and piece.player == 'black':
-            if (new_x == 5 or new_x == 4) and new_y == old_y:
-                return True
-        # if not in original spot, one directionality of pawns
-        elif (new_x == old_x + 1 and piece.player == 'white' and new_y == old_y) or (new_x == old_x - 1 and piece.player == 'black' and new_y == old_y):
-            # make sure nothing is in the way
-            if check_for_piece(new_x, new_y, all_game_pieces) is None:
-                return True
-        # if you want to capture with a pawn
-        # check if a piece is in capture position
-        elif ((new_x == old_x + 1 and piece.player == 'white' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)
-            or (new_x == old_x + 1 and piece.player == 'white' and new_y == old_y - 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)):
-            return True
-        elif ((new_x == old_x - 1 and piece.player == 'black' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)
-            or (new_x == old_x - 1 and piece.player == 'black' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)):
-            return True
-        #eventually add en passant here
-        return False
+def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y):
+    # select the current piece we are looking at, and the 'enemy' piece if exists
+    current_piece = chess_board[selected_piece_x][selected_piece_y]
+    enemy_piece = chess_board[new_x][new_y]
+
+    # pawn movements!
+    if current_piece.piece == 'wP':
+        # does the col change? if yes, then it means potential capture
+        if selected_piece_y == new_y:
+            # if pawn is in original spot
+            if selected_piece_x == 6:
+                # pawn can move one OR two squares
+                if selected_piece_x - new_x == 1 or selected_piece_x - new_x == 2:
+                    return True
+            else:
+                # pawn can move one square
+                if selected_piece_x - new_x == 1:
+                    return True
+        elif selected_piece_y != new_y:
+            # if the other player is black
+            if enemy_piece.player != current_piece.player:
+                # if the new position of the pawn is 1 row away
+                if selected_piece_x - new_x == 1:
+                    # if the position of the pawn will be +-1 col
+                    if selected_piece_y - new_y == 1 or selected_piece_y - new_y == -1:
+                        return True
+
+    elif current_piece.piece == 'bP':
+        # does the col change? if yes, then it means potential capture
+        if selected_piece_y == new_y:
+            # if pawn is in original spot
+            if selected_piece_x == 1:
+                # pawn can move one OR two squares
+                if new_x - selected_piece_x == 1 or new_x - selected_piece_x == 2:
+                    return True
+            else:
+                # pawn can move one square
+                if new_x - selected_piece_x == 1:
+                    return True
+        elif selected_piece_y != new_y:
+            # if the other player is black
+            if enemy_piece.player != current_piece.player:
+                # if the new position of the pawn is 1 row away
+                if new_x - selected_piece_x == 1:
+                    # if the position of the pawn will be +-1 col
+                    if new_y - selected_piece_y == 1 or new_y - selected_piece_y == -1:
+                        return True
+
+    # Rook movements!
+    # rooks can only move up/down left/right
+    # this only says rooks legal move, does not check for a piece in the way
+    if current_piece.piece == 'wR' or current_piece.piece == 'bR':
+        # no enemy in new spot
+        if enemy_piece == ' ':
+            # assume rook is moving up/down
+            if selected_piece_y == new_y:
+                # rook moved left/right
+                if selected_piece_x != new_x:
+                    return True
+            # assuming rook moves left/right
+            elif selected_piece_x == new_x:
+                # rook moved up/down
+                if selected_piece_y != new_y:
+                    return True
+        # potential enemy in new spot
+        elif enemy_piece != ' ':
+            # is the enemy piece opposite color?
+            if enemy_piece.player != current_piece.player:
+                # assume rook is moving up/down
+                if selected_piece_y == new_y:
+                    # rook moved left/right
+                    if selected_piece_x != new_x:
+                        return True
+                # assuming rook moves left/right
+                elif selected_piece_x == new_x:
+                    # rook moved up/down
+                    if selected_piece_y != new_y:
+                        return True
+    
+    return False
+
+def board_for_testing():
+    # initialize game pieces and chess board
+    board_size = 8
+    chess_board = initialize_chess_board(board_size)
+    return chess_board

@@ -122,3 +122,33 @@ def make_chess_board_v3():
         chess_board[piece_x][piece_y] = piece
 
     return all_game_pieces, chess_board
+
+def legal_moves(piece, new_x, new_y, all_game_pieces):
+    # this function will return True if move is allowed, False if not
+
+    # start with pawn movement and pawn capture
+    # check if this is a pawn
+    old_x, old_y = piece.position
+    if piece.piece == 'p':
+        # check if pawn is in original spot
+        if old_x == 1 and piece.player == 'white':
+            if (new_x == 2 or new_x == 3) and new_y == old_y:
+                return True
+        elif old_x == 6 and piece.player == 'black':
+            if (new_x == 5 or new_x == 4) and new_y == old_y:
+                return True
+        # if not in original spot, one directionality of pawns
+        elif (new_x == old_x + 1 and piece.player == 'white' and new_y == old_y) or (new_x == old_x - 1 and piece.player == 'black' and new_y == old_y):
+            # make sure nothing is in the way
+            if check_for_piece(new_x, new_y, all_game_pieces) is None:
+                return True
+        # if you want to capture with a pawn
+        # check if a piece is in capture position
+        elif ((new_x == old_x + 1 and piece.player == 'white' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)
+            or (new_x == old_x + 1 and piece.player == 'white' and new_y == old_y - 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)):
+            return True
+        elif ((new_x == old_x - 1 and piece.player == 'black' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)
+            or (new_x == old_x - 1 and piece.player == 'black' and new_y == old_y + 1 and check_for_piece(new_x, new_y, all_game_pieces) is not None)):
+            return True
+        #eventually add en passant here
+        return False
