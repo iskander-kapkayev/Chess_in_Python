@@ -39,6 +39,7 @@ def draw_board():
 # game loop that will keep working until game ends
 running = True
 selected_piece = None
+player = 0
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -49,29 +50,29 @@ while running:
             col = x // square_size
 
             if selected_piece:
+                if (chess_board[selected_piece[0]][selected_piece[1]].player == 'white' and player % 2 == 0) or (chess_board[selected_piece[0]][selected_piece[1]].player == 'black' and player % 2 == 1):
 
-                # check the path of the selected piece
+                    if legal_movement(chess_board, selected_piece[0], selected_piece[1], row, col):
 
+                        #move selected piece to the new spot
+                        chess_board[row][col] = chess_board[selected_piece[0]][selected_piece[1]]
 
-                # check if capture position
+                        # remove the selected piece from the old spot
+                        chess_board[selected_piece[0]][selected_piece[1]] = ' '
+                        player += 1
+                        selected_piece = None
+                    else:
+                        selected_piece = None
+                else:
+                    selected_piece = None
 
-
-
-                # if empty path, move piece
-
-                # add a function to move piece on chess board and also update position of piece (Chess_Piece.position)
-                #move selected piece to the new spot
-                chess_board[row][col] = chess_board[selected_piece[0]][selected_piece[1]]
-
-                # remove the selected piece from the old spot
-                chess_board[selected_piece[0]][selected_piece[1]] = ' '
-                selected_piece = None
             else:
                 # select a piece
                 if chess_board[row][col] != ' ':
                     selected_piece = (row, col)
 
     # this will draw the board each time
+    # create a function that checks if the KING is in check or checkmate
     draw_board()
     pygame.display.flip()
 
