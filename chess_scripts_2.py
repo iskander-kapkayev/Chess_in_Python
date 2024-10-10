@@ -87,6 +87,8 @@ def initialize_chess_board(board_size):
 def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y):
     current_piece = chess_board[selected_piece_x][selected_piece_y]
     enemy_piece = chess_board[new_x][new_y]
+    change_in_x = new_x - selected_piece_x
+    change_in_y = new_y - selected_piece_y
 
     # make sure that the new spot is not the old spot (clicking the same piece error)
     if current_piece == enemy_piece:
@@ -119,8 +121,6 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # --------------- Rook movements! ---------------
         # check all spaces between rooks current spot and next spot
         elif current_piece.piece == 'wR' or current_piece.piece == 'bR':
-            change_in_x = selected_piece_x - new_x
-            change_in_y = selected_piece_y - new_y
             # check if rook is moving up/down or left/right
             if abs(change_in_x) == 0:
                 # rook is moving left and right
@@ -138,7 +138,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                     # in case rook is moving 1 square
                     if change_in_y == 1:
                         change_in_y += 1
-                    for iterator in range(1, change_in_y, 1):
+                    for iterator in range(1, abs(change_in_y), 1):
                         if chess_board[selected_piece_x][selected_piece_y + iterator] != ' ':
                             # break loop and return false if a piece is found in the way!
                             return False
@@ -186,8 +186,6 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # Bishop's only restriction is a piece in the way
         elif current_piece.piece == 'wB' or current_piece.piece == 'bB':
             # since we know the path of the bishop is valid, then we can use the delta to check in between
-            change_in_x = selected_piece_x - new_x
-            change_in_y = selected_piece_y - new_y
 
             # both x and y decrease
             if change_in_x < 0 and change_in_y < 0:
@@ -221,8 +219,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # Queens need mad space between their movements
         elif current_piece.piece == 'wQ' or current_piece.piece == 'bQ':
             # if queen makes a rook movement type
-            change_in_x = selected_piece_x - new_x
-            change_in_y = selected_piece_y - new_y
+
             # check if queen is moving up/down or left/right
             if abs(change_in_x) == 0:
                 # queen is moving left and right
@@ -246,6 +243,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return False
                         # else return true if no pieces found in the way
                         return True
+
             # check if queen is moving up/down or left/right
             elif abs(change_in_y) == 0:
                 # queen is moving up and down
