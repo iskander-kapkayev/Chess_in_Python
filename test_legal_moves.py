@@ -7,6 +7,7 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_starting = board_for_testing()
         self.chess_board_scattered = board_for_testing_scattered()
 
+    # ---------- testing of legal path function (only considers possible movements for a piece) ----------
     def test_legal_path_pawn(self):
         # starting board checks
         # move a pawn from 6,2 to 4,2 from starting position
@@ -73,6 +74,82 @@ class TestLegalMoves(ut.TestCase):
         self.assertFalse(legal_check_1, "King cant move with another piece in the way!")
         self.assertTrue(legal_check_2, "King unable to make diagonal movement!")
         self.assertFalse(legal_check_3, "King should be unable to move to this spot.")
+
+    # ---------- testing for legal pathways, this means no pieces are in the way of the legal movements ----------
+
+    def test_legal_movement_pawn(self):
+        # scattered board checks
+        # move a white pawn from 4,3 to 3,3 when there's a pawn in the way (not legal)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 4, 3, 3, 3)
+        self.assertFalse(legal_check_1, "The pawn can't move when blocked!")
+
+    def test_legal_movement_king(self):
+        # starting board checks
+        # move a white king from 7,4 to 6,3 (illegal move since current player pawn is in the way)
+        legal_check_1 = legal_movement(self.chess_board_starting, 7, 4, 6, 3)
+        self.assertFalse(legal_check_1, "The king can't move when blocked!")
+
+    def test_legal_movement_knight(self):
+        # starting board checks
+        # move a white knight from 7,6 to 6,4 (not legal because current player's piece is in the way)
+        legal_check_1 = legal_movement(self.chess_board_starting, 7, 6, 6, 4)
+        self.assertFalse(legal_check_1, "The knight can't move when blocked at the new space!")
+
+    def test_legal_movement_rook(self):
+        # scattered board checks
+        # move bR from scattered spot to 1,7
+        self.chess_board_scattered[1][7] = self.chess_board_scattered[2][7]
+        # replace old spot with an empty piece
+        self.chess_board_scattered[2][7] = ' '
+        # now move the bR from 1,7 to 1,1 (legal movement)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 7, 1, 1)
+        self.assertTrue(legal_check_1, "The rook has a blockade in the way!")
+        # actually move the bR
+        self.chess_board_scattered[1][1] = self.chess_board_scattered[1][7]
+        self.chess_board_scattered[1][7] = ' '
+        # move bQ up 1 space
+        self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
+        self.chess_board_scattered[2][3] = ' '
+        # now there's a blockade for the rook, it should NOT be able to move back to it's og spot
+        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 1, 1, 7)
+        self.assertFalse(legal_check_2, "The rook should be blocked and can't move here!")
+
+    def test_legal_movement_bishop(self):
+        # scattered board checks
+        # move bR from scattered spot to 1,7
+        self.chess_board_scattered[1][7] = self.chess_board_scattered[2][7]
+        self.chess_board_scattered[2][7] = ' '
+        # now move the bR from 1,7 to 1,1
+        self.chess_board_scattered[1][1] = self.chess_board_scattered[1][7]
+        self.chess_board_scattered[1][7] = ' '
+        # move bQ up 1 space
+        self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
+        self.chess_board_scattered[2][3] = ' '
+        # now there's a blockade for the bishop in both directions upward
+        legal_check_1 = legal_movement(self.chess_board_scattered, 2, 2, 0, 0)
+        legal_check_2 = legal_movement(self.chess_board_scattered, 2, 2, 0, 4)
+        self.assertFalse(legal_check_1, "The bishop should be blocked and can't move here!")
+        self.assertFalse(legal_check_2, "The bishop should be blocked and can't move here!")
+
+    def test_legal_movement_queen(self):
+        # scattered board checks
+        # move bR from scattered spot to 1,7
+        self.chess_board_scattered[1][7] = self.chess_board_scattered[2][7]
+        self.chess_board_scattered[2][7] = ' '
+        # now move the bR from 1,7 to 1,1
+        self.chess_board_scattered[1][1] = self.chess_board_scattered[1][7]
+        self.chess_board_scattered[1][7] = ' '
+        # now move the bB from 2,2 to 0,4
+        self.chess_board_scattered[0][4] = self.chess_board_scattered[2][2]
+        self.chess_board_scattered[2][2] = ' '
+        # move bQ up 1 space
+        self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
+        self.chess_board_scattered[2][3] = ' '
+        # now there's a blockade for the queen to go from 1,3 to 1,0 or 1,3 to 0,4
+        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 3, 1, 0)
+        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 3, 0, 4)
+        self.assertFalse(legal_check_1, "The queen should be blocked and can't move here!")
+        self.assertFalse(legal_check_2, "The queen should be blocked and can't move here!")
 
     def tearDown(self):
         del self.chess_board_starting

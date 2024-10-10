@@ -92,14 +92,14 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
     if current_piece == enemy_piece:
         return False
 
-    # first check if the path is legal (aka move makes sense for piece)
+    # first check if the path is legal (aka move makes sense for selected piece)
     if legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y):
-        '''
+
         # if movement is legal for a piece, now check for a piece in pathway of a piece
 
         # --------------- Pawn movements! ---------------
-        # if the pawn moves 2 spaces
         if current_piece.piece == 'wP' or current_piece.piece == 'bP':
+            # if the pawn moves 2 spaces
             if abs(selected_piece_x - new_x) == 2:
                 # make sure nothing exists between new_x
                 if current_piece.piece == 'wP':
@@ -110,36 +110,74 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                     #  if black pawn, check space below it
                     if chess_board[selected_piece_x - 1][selected_piece_y] == ' ':
                         return True
-            # else if the pawn moves one space
-            elif abs(selected_piece_x - new_x) == 1:
+            # else if the pawn moves one space (not a capture, capture is already legalized in legal_path function)
+            elif abs(selected_piece_x - new_x) + abs(selected_piece_y - new_y) == 1:
                 # make sure that space is available
                 if enemy_piece == ' ':
                     return True
 
-
         # --------------- Rook movements! ---------------
         # check all spaces between rooks current spot and next spot
         elif current_piece.piece == 'wR' or current_piece.piece == 'bR':
+            change_in_x = selected_piece_x - new_x
+            change_in_y = selected_piece_y - new_y
             # check if rook is moving up/down or left/right
-            if abs(selected_piece_x - new_x) == 0:
+            if abs(change_in_x) == 0:
                 # rook is moving left and right
-                for iterator in range(min(selected_piece_y, new_y) + 1, abs(selected_piece_y - new_y) + min(selected_piece_y, new_y), 1):
-                    if chess_board[selected_piece_x][iterator] != ' ':
-                        return False
-                    return True
+                if change_in_y < 0:
+                    # in case rook is moving 1 square
+                    if change_in_y == -1:
+                        change_in_y -= 1
+                    for iterator in range(1, abs(change_in_y), 1):
+                        if chess_board[selected_piece_x][selected_piece_y - iterator] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
+                        return True
+                elif change_in_y > 0:
+                    # in case rook is moving 1 square
+                    if change_in_y == 1:
+                        change_in_y += 1
+                    for iterator in range(1, change_in_y, 1):
+                        if chess_board[selected_piece_x][selected_piece_y + iterator] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
+                        return True
             # check if rook is moving up/down or left/right
-            elif abs(selected_piece_y - new_y) == 0:
+            elif abs(change_in_y) == 0:
                 # rook is moving up and down
-                for iterator in range(min(selected_piece_x, new_x) + 1, abs(selected_piece_x - new_x) + min(selected_piece_x, new_x), 1):
-                    if chess_board[iterator][selected_piece_y] != ' ':
-                        return False
-                    return True
+                if change_in_x < 0:
+                    # in case rook is moving 1 square
+                    if change_in_x == -1:
+                        change_in_x -= 1
+                    for iterator in range(1, abs(change_in_x), 1):
+                        if chess_board[selected_piece_x - iterator][selected_piece_y] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
+                        return True
+                elif change_in_x > 0:
+                    # in case rook is moving 1 square
+                    if change_in_x == 1:
+                        change_in_x += 1
+                    for iterator in range(1, change_in_x, 1):
+                        if chess_board[selected_piece_x + iterator][selected_piece_y] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
+                        return True
 
 
         # --------------- Knight movements! ---------------
-        # knights do not have blockade issues
+        # knights do not have blocked issues
+        # this should return true always, unless your own piece is in the way
         elif current_piece.piece == 'wN' or current_piece.piece == 'bN':
-            if enemy_piece == ' ' or (enemy_piece.player != current_piece.player):
+            # if the space is empty
+            if enemy_piece == ' ':
+                return True
+            # if the space is not empty, then it must have a different color piece
+            elif enemy_piece.player != current_piece.player:
                 return True
 
 
@@ -183,28 +221,58 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # Queens need mad space between their movements
         elif current_piece.piece == 'wQ' or current_piece.piece == 'bQ':
             # if queen makes a rook movement type
-            if abs(selected_piece_x - new_x) == 0 or abs(selected_piece_y - new_y) == 0:
-                if abs(selected_piece_x - new_x) == 0:
-                    # rook is moving left and right
-                    for iterator in range(min(selected_piece_y, new_y) + 1, abs(selected_piece_y - new_y) + min(selected_piece_y, new_y), 1):
-                        if chess_board[selected_piece_x][iterator] != ' ':
+            change_in_x = selected_piece_x - new_x
+            change_in_y = selected_piece_y - new_y
+            # check if queen is moving up/down or left/right
+            if abs(change_in_x) == 0:
+                # queen is moving left and right
+                if change_in_y < 0:
+                    # in case queen is moving 1 square
+                    if change_in_y == -1:
+                        change_in_y -= 1
+                    for iterator in range(1, abs(change_in_y), 1):
+                        if chess_board[selected_piece_x][selected_piece_y - iterator] != ' ':
+                            # break loop and return false if a piece is found in the way!
                             return False
+                        # else return true if no pieces found in the way
                         return True
-                # check if rook is moving up/down or left/right
-                elif abs(selected_piece_y - new_y) == 0:
-                    # rook is moving up and down
-                    for iterator in range(min(selected_piece_x, new_x) + 1, abs(selected_piece_x - new_x) + min(selected_piece_x, new_x), 1):
-                        if chess_board[iterator][selected_piece_y] != ' ':
+                elif change_in_y > 0:
+                    # in case queen is moving 1 square
+                    if change_in_y == 1:
+                        change_in_y += 1
+                    for iterator in range(1, change_in_y, 1):
+                        if chess_board[selected_piece_x][selected_piece_y + iterator] != ' ':
+                            # break loop and return false if a piece is found in the way!
                             return False
+                        # else return true if no pieces found in the way
+                        return True
+            # check if queen is moving up/down or left/right
+            elif abs(change_in_y) == 0:
+                # queen is moving up and down
+                if change_in_x < 0:
+                    # in case queen is moving 1 square
+                    if change_in_x == -1:
+                        change_in_x -= 1
+                    for iterator in range(1, abs(change_in_x), 1):
+                        if chess_board[selected_piece_x - iterator][selected_piece_y] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
+                        return True
+                elif change_in_x > 0:
+                    # in case queen is moving 1 square
+                    if change_in_x == 1:
+                        change_in_x += 1
+                    for iterator in range(1, change_in_x, 1):
+                        if chess_board[selected_piece_x + iterator][selected_piece_y] != ' ':
+                            # break loop and return false if a piece is found in the way!
+                            return False
+                        # else return true if no pieces found in the way
                         return True
 
             # or if the queen makes a bishop movement
-            # using the delta to check between spots
-            change_in_x = selected_piece_x - new_x
-            change_in_y = selected_piece_y - new_y
-
             # both x and y decrease
-            if change_in_x < 0 and change_in_y < 0:
+            elif change_in_x < 0 and change_in_y < 0:
                 for iterator in range(1, abs(change_in_x), 1):
                     if chess_board[selected_piece_x - iterator][selected_piece_y - iterator] != ' ':
                         return False
@@ -236,10 +304,13 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # Kings can move any direction by 1 square
         # there must be no piece in his way, or he must capture an enemy piece
         elif current_piece.piece == 'wK' or current_piece.piece == 'bK':
-            if enemy_piece == ' ' or (enemy_piece.player != current_piece.player):
+            # if the space is empty
+            if enemy_piece == ' ':
                 return True
-        '''
-        return True
+            # else if the space is taken, must be the other color piece
+            elif enemy_piece.player != current_piece.player:
+                return True
+
     # return false if nothing is triggered above
     return False
 
