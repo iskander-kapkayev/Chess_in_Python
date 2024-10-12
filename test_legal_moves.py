@@ -11,27 +11,27 @@ class TestLegalMoves(ut.TestCase):
     def test_legal_path_pawn(self):
         # starting board checks
         # move a pawn from 6,2 to 4,2 from starting position
-        legal_check = legal_path(self.chess_board_starting, 6, 2, 4, 2)
+        legal_check = legal_path(self.chess_board_starting, 6, 2, 4, 2, None)
         # move a pawn from 6,2 to 3,2 from starting position (not legal)
-        legal_check_2 = legal_path(self.chess_board_starting, 6, 2, 3, 2)
+        legal_check_2 = legal_path(self.chess_board_starting, 6, 2, 3, 2, None)
         self.assertTrue(legal_check, "The white pawn was unable to move 2 squares up from the starting position!")
         self.assertFalse(legal_check_2, "The pawn can't move 3 spaces!")
 
         # scattered board checks
         # move a pawn from 4,3 to 3,3 when there's a pawn in the way (not legal)
-        legal_check_3 = legal_path(self.chess_board_scattered, 4, 3, 3, 3)
+        legal_check_3 = legal_path(self.chess_board_scattered, 4, 3, 3, 3, None)
         self.assertFalse(legal_check_3, "The pawn can't move 3 spaces!")
 
     def test_legal_path_knight(self):
         # starting board checks
         # move a white knight from 7,1 to 5,2
-        legal_check_1 = legal_path(self.chess_board_starting, 7, 1, 5, 2)
+        legal_check_1 = legal_path(self.chess_board_starting, 7, 1, 5, 2, None)
         # move a black knight from 0,6 to 2,5
-        legal_check_2 = legal_path(self.chess_board_starting, 0, 6, 2, 5)
+        legal_check_2 = legal_path(self.chess_board_starting, 0, 6, 2, 5, None)
         # move a black knight from 0,6 to 2,4 (not a legal L-shape movement)
-        legal_check_3 = legal_path(self.chess_board_starting, 0, 6, 2, 4)
+        legal_check_3 = legal_path(self.chess_board_starting, 0, 6, 2, 4, None)
         # move a white knight from 7,6 to 6,4 (not legal because current player's piece is in the way)
-        legal_check_4 = legal_path(self.chess_board_starting, 7, 6, 6, 4)
+        legal_check_4 = legal_path(self.chess_board_starting, 7, 6, 6, 4, None)
         self.assertTrue(legal_check_1, "The knight is unable to move to L-shape space!")
         self.assertTrue(legal_check_2, "The knight is unable to move to L-shape space!")
         self.assertFalse(legal_check_3, "The knight is unable to move to L-shape space!")
@@ -40,9 +40,9 @@ class TestLegalMoves(ut.TestCase):
     def test_legal_path_bishop(self):
         # scattered board checks
         # move a white bishop from 5,2 to 7,4
-        legal_check_1 = legal_path(self.chess_board_scattered, 5, 2, 7, 4)
+        legal_check_1 = legal_path(self.chess_board_scattered, 5, 2, 7, 4, None)
         # move a black bishop from 2,5 to 3,6
-        legal_check_2 = legal_path(self.chess_board_scattered, 2, 5, 3, 6)
+        legal_check_2 = legal_path(self.chess_board_scattered, 2, 5, 3, 6, None)
 
         self.assertTrue(legal_check_1, "The Bishop is unable to make this move!")
         self.assertFalse(legal_check_2, "The Bishop should not be able to make this move!")
@@ -50,11 +50,11 @@ class TestLegalMoves(ut.TestCase):
     def test_legal_path_queen(self):
         # scattered board checks
         # move a white queen from 5,3 to 7,5 (diagonal move)
-        legal_check_1 = legal_path(self.chess_board_scattered, 5, 3, 7, 5)
+        legal_check_1 = legal_path(self.chess_board_scattered, 5, 3, 7, 5, None)
         # move a black queen from 2,3 to 0,3 (rook movement)
-        legal_check_2 = legal_path(self.chess_board_scattered, 2, 3, 0, 3)
+        legal_check_2 = legal_path(self.chess_board_scattered, 2, 3, 0, 3, None)
         # move a black queen from 2,3 to 2,4 (illegal rook movement since space is taken)
-        legal_check_3 = legal_path(self.chess_board_scattered, 2, 3, 2, 4)
+        legal_check_3 = legal_path(self.chess_board_scattered, 2, 3, 2, 4, None)
 
         self.assertTrue(legal_check_1, "Queen unable to make bishop movement!")
         self.assertTrue(legal_check_2, "Queen unable to make rook movement!")
@@ -63,13 +63,13 @@ class TestLegalMoves(ut.TestCase):
     def test_legal_path_king(self):
         # starting board checks
         # move a white king from 7,4 to 6,3 (illegal move since current player pawn is in the way)
-        legal_check_1 = legal_path(self.chess_board_starting, 7, 4, 6, 3)
+        legal_check_1 = legal_path(self.chess_board_starting, 7, 4, 6, 3, None)
 
         # scattered board checks
         # move a black king from 2,4 to 1,3 (diagonal movement)
-        legal_check_2 = legal_path(self.chess_board_scattered, 2, 4, 1, 3)
+        legal_check_2 = legal_path(self.chess_board_scattered, 2, 4, 1, 3, None)
         # move a white king from 5,4 to 5,3 (illegal rook movement)
-        legal_check_3 = legal_path(self.chess_board_scattered, 5, 4, 5, 3)
+        legal_check_3 = legal_path(self.chess_board_scattered, 5, 4, 5, 3, None)
 
         self.assertFalse(legal_check_1, "King cant move with another piece in the way!")
         self.assertTrue(legal_check_2, "King unable to make diagonal movement!")
@@ -80,19 +80,24 @@ class TestLegalMoves(ut.TestCase):
     def test_legal_movement_pawn(self):
         # scattered board checks
         # move a white pawn from 4,3 to 3,3 when there's a pawn in the way (not legal)
-        legal_check_1 = legal_movement(self.chess_board_scattered, 4, 3, 3, 3)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 4, 3, 3, 3, None)
         self.assertFalse(legal_check_1, "The pawn can't move when blocked!")
+
+        # starting board checks
+        # move starting pawn two spaces from 6,1 to 4,1
+        legal_check_2 = legal_movement(self.chess_board_starting, 6, 1, 4, 1, None)
+        self.assertTrue(legal_check_2, "The pawn should be able to move 2 spaces in the beginning!")
 
     def test_legal_movement_king(self):
         # starting board checks
         # move a white king from 7,4 to 6,3 (illegal move since current player pawn is in the way)
-        legal_check_1 = legal_movement(self.chess_board_starting, 7, 4, 6, 3)
+        legal_check_1 = legal_movement(self.chess_board_starting, 7, 4, 6, 3, None)
         self.assertFalse(legal_check_1, "The king can't move when blocked!")
 
     def test_legal_movement_knight(self):
         # starting board checks
         # move a white knight from 7,6 to 6,4 (not legal because current player's piece is in the way)
-        legal_check_1 = legal_movement(self.chess_board_starting, 7, 6, 6, 4)
+        legal_check_1 = legal_movement(self.chess_board_starting, 7, 6, 6, 4, None)
         self.assertFalse(legal_check_1, "The knight can't move when blocked at the new space!")
 
     def test_legal_movement_rook(self):
@@ -102,7 +107,7 @@ class TestLegalMoves(ut.TestCase):
         # replace old spot with an empty piece
         self.chess_board_scattered[2][7] = ' '
         # now move the bR from 1,7 to 1,1 (legal movement)
-        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 7, 1, 1)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 7, 1, 1, None)
         self.assertTrue(legal_check_1, "The rook has a blockade in the way!")
         # actually move the bR
         self.chess_board_scattered[1][1] = self.chess_board_scattered[1][7]
@@ -111,7 +116,7 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
         self.chess_board_scattered[2][3] = ' '
         # now there's a blockade for the rook, it should NOT be able to move back to it's og spot
-        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 1, 1, 7)
+        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 1, 1, 7, None)
         self.assertFalse(legal_check_2, "The rook should be blocked and can't move here!")
 
     def test_legal_movement_bishop(self):
@@ -126,8 +131,8 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
         self.chess_board_scattered[2][3] = ' '
         # now there's a blockade for the bishop in both directions upward
-        legal_check_1 = legal_movement(self.chess_board_scattered, 2, 2, 0, 0)
-        legal_check_2 = legal_movement(self.chess_board_scattered, 2, 2, 0, 4)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 2, 2, 0, 0, None)
+        legal_check_2 = legal_movement(self.chess_board_scattered, 2, 2, 0, 4, None)
         self.assertFalse(legal_check_1, "The bishop should be blocked and can't move here!")
         self.assertFalse(legal_check_2, "The bishop should be blocked and can't move here!")
 
@@ -146,10 +151,45 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_scattered[1][3] = self.chess_board_scattered[2][3]
         self.chess_board_scattered[2][3] = ' '
         # now there's a blockade for the queen to go from 1,3 to 1,0 or 1,3 to 0,4
-        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 3, 1, 0)
-        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 3, 0, 4)
+        legal_check_1 = legal_movement(self.chess_board_scattered, 1, 3, 1, 0, None)
+        legal_check_2 = legal_movement(self.chess_board_scattered, 1, 3, 0, 4, None)
         self.assertFalse(legal_check_1, "The queen should be blocked and can't move here!")
         self.assertFalse(legal_check_2, "The queen should be blocked and can't move here!")
+
+    def test_legal_movement_en_passant_wp(self):
+        # starting board checks
+        # move wP from 6,4 to 4,4 then to 3,4
+        self.chess_board_starting[4][4] = self.chess_board_starting[6][4]
+        self.chess_board_starting[6][4] = ' '
+
+        self.chess_board_starting[3][4] = self.chess_board_starting[4][4]
+        self.chess_board_starting[4][4] = ' '
+
+        # move bP from 1,3 to 3,3
+        self.chess_board_starting[3][3] = self.chess_board_starting[1][3]
+        self.chess_board_starting[1][3] = ' '
+
+        # now the wP should be able to capture the bP via en passant
+        legal_check_1 = legal_movement(self.chess_board_starting, 3, 4, 2, 3, ('black', 'bP', (1, 3), (3, 3)))
+        self.assertTrue(legal_check_1, "White pawn should be able to perform en passant!")
+
+    def test_legal_movement_en_passant_bp(self):
+        # starting board checks
+        # move bP from 1,4 to 3,4 then to 4,4
+        self.chess_board_starting[3][4] = self.chess_board_starting[1][4]
+        self.chess_board_starting[1][4] = ' '
+
+        self.chess_board_starting[4][4] = self.chess_board_starting[3][4]
+        self.chess_board_starting[3][4] = ' '
+
+        # move wP from 1,3 to 3,3
+        self.chess_board_starting[3][3] = self.chess_board_starting[1][3]
+        self.chess_board_starting[1][3] = ' '
+
+        # now the bP should be able to capture the bP via en passant
+        legal_check_1 = legal_movement(self.chess_board_starting, 4, 4, 5, 3, ('white', 'wP', (1, 3), (3, 3)))
+        self.assertTrue(legal_check_1, "Black pawn should be able to perform en passant!")
+
 
     def tearDown(self):
         del self.chess_board_starting
