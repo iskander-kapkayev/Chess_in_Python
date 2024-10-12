@@ -170,7 +170,8 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_starting[1][3] = ' '
 
         # now the wP should be able to capture the bP via en passant
-        legal_check_1 = legal_movement(self.chess_board_starting, 3, 4, 2, 3, ('black', 'bP', (1, 3), (3, 3)))
+        previous = ('black', 'bP', (1, 3), (3, 3))
+        legal_check_1 = legal_movement(self.chess_board_starting, 3, 4, 2, 3, previous)
         self.assertTrue(legal_check_1, "White pawn should be able to perform en passant!")
 
     def test_legal_movement_en_passant_bp(self):
@@ -182,13 +183,19 @@ class TestLegalMoves(ut.TestCase):
         self.chess_board_starting[4][4] = self.chess_board_starting[3][4]
         self.chess_board_starting[3][4] = ' '
 
-        # move wP from 1,3 to 3,3
-        self.chess_board_starting[3][3] = self.chess_board_starting[1][3]
-        self.chess_board_starting[1][3] = ' '
+        # move wP from 6,5 to 4,5
+        self.chess_board_starting[4][5] = self.chess_board_starting[6][5]
+        self.chess_board_starting[6][5] = ' '
 
         # now the bP should be able to capture the bP via en passant
-        legal_check_1 = legal_movement(self.chess_board_starting, 4, 4, 5, 3, ('white', 'wP', (1, 3), (3, 3)))
+        previous = ('white', 'wP', (6, 5), (4, 5))
+        legal_check_1 = legal_movement(self.chess_board_starting, 4, 4, 5, 5, previous)
         self.assertTrue(legal_check_1, "Black pawn should be able to perform en passant!")
+
+        # move a totally different piece, previously, but the pawn is in the right space for en passant
+        previous_2 = ('white', 'wB', (1, 1), (2, 2))
+        legal_check_2 = legal_movement(self.chess_board_starting, 4, 4, 5, 5, previous_2)
+        self.assertFalse(legal_check_2, "En passant only allowed on first attempt!")
 
 
     def tearDown(self):

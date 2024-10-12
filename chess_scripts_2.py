@@ -18,6 +18,7 @@ class ChessPiece(ChessPlayer):
         self.position = position
         self.moved_to = None
         self.moved_from = position
+        self.possible_moves = None
         super().__init__(player)
 
     # get the position of the piece
@@ -33,6 +34,18 @@ class ChessPiece(ChessPlayer):
     def get_piece(self):
         return self.piece
 
+    # get moved to
+    def get_moved_to(self):
+        return self.moved_to
+
+    # get moved from
+    def get_moved_from(self):
+        return self.moved_from
+
+    # get possible moves
+    def get_possible_moves(self):
+        return self.possible_moves
+
     # update the position of the piece if checks are complete
     def update_position(self, new_position):
         self.position = new_position
@@ -40,32 +53,21 @@ class ChessPiece(ChessPlayer):
     # update to new position
     def update_moved_to(self, new_position):
         self.moved_to = new_position
-
-    # get moved to
-    def get_moved_to(self):
-        return self.moved_to
+        self.update_position(self.moved_to)
 
     # update to old position
     def update_moved_from(self, new_position):
         self.moved_from = new_position
 
-    # get moved from
-    def get_moved_from(self):
-        return self.moved_from
+    # update possible moves
+    def update_possible_moves(self, list_of_moves):
+        self.possible_moves = list_of_moves
 
     # evaluate position of a chess piece based on given x, y
     def moved(self):
         if self.moved_to is None:
             return False
         return True
-
-    # function to check if piece belongs to player
-    def player_check(self, player):
-        if player % 2 == 0 and self.player == 'white':
-            return True
-        elif player % 2 == 1 and self.player == 'black':
-            return True
-        return False
 
     # so that only the piece name prints in the lists
     def __repr__(self):
@@ -115,8 +117,8 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
     change_in_x = new_x - selected_piece_x
     change_in_y = new_y - selected_piece_y
 
-    # make sure that the new spot is not the old spot (clicking the same piece error)
-    if current_piece == enemy_piece:
+    # make sure that the new spot is not the old spot (clicking the same piece error), and not empty
+    if current_piece == enemy_piece or current_piece == ' ':
         return False
 
     # first check if the path is legal (aka move makes sense for selected piece)
@@ -361,16 +363,20 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         # --------------- King movements! --------------- #
         # Kings can move any direction by 1 square
         # there must be no piece in his way, or he must capture an enemy piece
+        # check possible placements before allowing move
         elif current_piece.get_piece() == 'wK' or current_piece.get_piece() == 'bK':
-            # if castling, already approved
-            if abs(change_in_x) == 2:
-                return True
-            # if the space is empty
-            if enemy_piece == ' ':
-                return True
-            # else if the space is taken, must be the other color piece
-            elif enemy_piece.get_player() != current_piece.get_player():
-                return True
+            # all king moves have already been approved in legal path
+            # now must consider enemy pieces in range
+            # we can use the possible move list to make a move
+            for rows in chess_board:
+                for square in rows:
+                    if square != ' ':
+                        if square.get_player() != current_piece.get_player():
+                            for item in square.get_possible_moves():
+                                check_1, check_2 = item
+                                if new_x == check_1 and new_y == check_2:
+                                    return False
+            return True
 
     # return false if nothing is triggered above
     return False
@@ -407,7 +413,9 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                     # if the selected piece is on the 3rd row of the board
                     if selected_piece_x == 3:
                         # each condition must be met in order to allow for an en passant
-                        prev_color, prev_piece, prev_moved_from_x, prev_moved_from_y, prev_moved_to_x, prev_moved_to_y = previous
+                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous
+                        prev_moved_from_x, prev_moved_from_y = prev_moved_from
+                        prev_moved_to_x, prev_moved_to_y = prev_moved_to
                         # player color must be different from previous player, previous moved piece is bP
                         if prev_color != current_piece.get_player() and prev_piece == 'bP':
                             # previous move was a black pawn moved from row 1 to row 3
@@ -445,7 +453,9 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                     # if the selected pawn is on the 4th row of the board
                     if selected_piece_x == 4:
                         # each condition must be met in order to allow for an en passant
-                        prev_color, prev_piece, prev_moved_from_x, prev_moved_from_y, prev_moved_to_x, prev_moved_to_y = previous
+                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous
+                        prev_moved_from_x, prev_moved_from_y = prev_moved_from
+                        prev_moved_to_x, prev_moved_to_y = prev_moved_to
                         # player color must be different from previous player, previous moved piece is bP
                         if prev_color != current_piece.get_player() and prev_piece == 'wP':
                             # previous move was a black pawn moved from row 1 to row 3
@@ -453,6 +463,7 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                                 # if the pawn moved perfectly to the side of your pawn then you can capture as if no double movement
                                 if new_x == prev_moved_to_x + 1 and new_y == prev_moved_to_y:
                                     # the conditions were met, so en passant is possible!
+                                    chess_board[prev_moved_to_x][prev_moved_to_y] = ' '
                                     return True
                 # if the other player is different
                 elif enemy_piece != ' ':
@@ -530,44 +541,63 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
     # --------------- King movements! --------------- #
     # Kings can move any direction by 1 square
     # there must be no piece in his way, or he must capture an enemy piece
+    # we can cycle list of possible moves to make sure that he is not in the range of an enemy piece
     elif current_piece.get_piece() == 'wK' or current_piece.get_piece() == 'bK':
         # check if king is trying to do a castle
-        if abs(change_in_y) == 2:
+        if (abs(change_in_x) == 0
+            and abs(change_in_y) == 2
+            and current_piece.moved() is False):
             # is king moving left or right?
             if change_in_y > 0:
                 # king is moving right
-                if current_piece.get_player() == 'white' and current_piece.moved() is False and chess_board[7][7].moved() is False:
-                    # white king and white rook, check all spaces between it and the rook
-                    # check 7,5 and 7,6 for any pieces
-                    if chess_board[7][5] == ' ' and chess_board[7][6] == ' ':
-                        return True
-                if current_piece.get_player() == 'black' and current_piece.moved() is False and chess_board[0][7].moved() is False:
-                    # white king and white rook, check all spaces between it and the rook
-                    # check 0,5 and 0,6 for any pieces
-                    if chess_board[0][5] == ' ' and chess_board[0][6] == ' ':
-                        return True
+                if current_piece.get_player() == 'white' and chess_board[7][7].get_piece() == 'wR':
+                    if chess_board[7][7].moved() is False:
+                        # white king and white rook, check all spaces between it and the rook
+                        # check 7,5 and 7,6 for any pieces
+                        if chess_board[7][5] == ' ' and chess_board[7][6] == ' ':
+                            return True
+                if current_piece.get_player() == 'black' and chess_board[0][7].get_piece() == 'bR':
+                    if chess_board[0][7].moved() is False:
+                        # white king and white rook, check all spaces between it and the rook
+                        # check 0,5 and 0,6 for any pieces
+                        if chess_board[0][5] == ' ' and chess_board[0][6] == ' ':
+                            return True
             if change_in_y < 0:
                 # king is moving left
-                if current_piece.get_player() == 'white' and current_piece.moved() is False and chess_board[7][0].moved() is False:
-                    # white king and white rook, check all spaces between it and the rook
-                    # check 7,1 and 7,2 and 7,3 for any pieces
-                    if chess_board[7][1] == ' ' and chess_board[7][2] == ' ' and chess_board[7][3] == ' ':
-                        return True
-                if current_piece.get_player() == 'black' and current_piece.moved() is False and chess_board[0][0].moved() is False:
-                    # white king and white rook, check all spaces between it and the rook
-                    # check 0,1 and 0,2 and 0,3 for any pieces
-                    if chess_board[0][1] == ' ' and chess_board[0][2] == ' ' and chess_board[0][3] == ' ':
-                        return True
+                if current_piece.get_player() == 'white' and chess_board[7][0].get_piece() == 'wR':
+                    if chess_board[7][0].moved() is False:
+                        # white king and white rook, check all spaces between it and the rook
+                        # check 7,1 and 7,2 and 7,3 for any pieces
+                        if chess_board[7][1] == ' ' and chess_board[7][2] == ' ' and chess_board[7][3] == ' ':
+                            return True
+                if current_piece.get_player() == 'black' and chess_board[0][0].get_piece() == 'bR':
+                    if chess_board[0][0].moved() is False:
+                        # white king and white rook, check all spaces between it and the rook
+                        # check 0,1 and 0,2 and 0,3 for any pieces
+                        if chess_board[0][1] == ' ' and chess_board[0][2] == ' ' and chess_board[0][3] == ' ':
+                            return True
+
         elif enemy_piece == ' ' or (enemy_piece.get_player() != current_piece.get_player()):
             # king is only allowed to move around radius
-            if selected_piece_y == new_y:
-                if abs(change_in_x) == 1:
-                    return True
-            elif selected_piece_x == new_x:
+            # king can move left/right/up/down
+
+            # king stays on same row
+            if abs(change_in_x) == 0:
+                # make sure it's moving 1 square left/right
                 if abs(change_in_y) == 1:
                     return True
-            elif abs(change_in_x) + abs(change_in_y) == 2:
-                return True
+
+            # king stays on same col
+            elif abs(change_in_y) == 0:
+                # make sure it's moving 1 square up/down
+                if abs(change_in_x) == 1:
+                    return True
+
+            # check diagonal movement (should be +- 1 slope)
+            elif abs(change_in_y) == abs(change_in_x):
+                # make sure king is only moving 1 square in any direction
+                if abs(change_in_x) == 1:
+                    return True
 
     # return false if none of the above legal moves are correct
     return False
@@ -620,6 +650,147 @@ def initialize_pieces_testing_scattered():
 
     all_game_pieces = pawn_row_black + pawn_row_white + back_row_black + back_row_white
     return all_game_pieces
+
+# ---------- this will apply a castle ---------- #
+
+def king_castle(chess_board, selected_piece_x, selected_piece_y, new_row, new_col):
+    current_piece = chess_board[selected_piece_x][selected_piece_y]
+    change_in_y = new_col - selected_piece_y
+    # if change in y is negative
+    if change_in_y < 0:
+        # move king to castle position and remove old king piece
+        chess_board[new_row][new_col] = chess_board[selected_piece_x][selected_piece_y]
+        chess_board[selected_piece_x][selected_piece_y] = ' '
+        # update chess piece class
+        chess_board[new_row][new_col].update_moved_to((new_row, new_col))
+        chess_board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
+        # move rook to castle position, and remove old rook piece
+        if current_piece.piece == 'wK':
+            chess_board[new_row][new_col + 1] = chess_board[7][0]
+            chess_board[7][0] = ' '
+            # update chess piece class
+            chess_board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
+            chess_board[new_row][new_col + 1].update_moved_from((7, 0))
+        elif current_piece.piece == 'bK':
+            chess_board[new_row][new_col + 1] = chess_board[0][0]
+            chess_board[0][0] = ' '
+            # update chess piece class
+            chess_board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
+            chess_board[new_row][new_col + 1].update_moved_from((0, 0))
+    elif change_in_y > 0:
+        # move king to castle position and remove old king piece
+        chess_board[new_row][new_col] = chess_board[selected_piece_x][selected_piece_y]
+        chess_board[selected_piece_x][selected_piece_y] = ' '
+        # update chess piece class
+        chess_board[new_row][new_col].update_moved_to((new_row, new_col))
+        chess_board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
+        # move rook to castle position, and remove old rook piece
+        if current_piece.piece == 'wK':
+            chess_board[new_row][new_col - 1] = chess_board[7][7]
+            chess_board[7][7] = ' '
+            # update chess piece class
+            chess_board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
+            chess_board[new_row][new_col - 1].update_moved_from((7, 7))
+        elif current_piece.piece == 'bK':
+            chess_board[new_row][new_col - 1] = chess_board[0][7]
+            chess_board[0][7] = ' '
+            # update chess piece class
+            chess_board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
+            chess_board[new_row][new_col - 1].update_moved_from((0, 7))
+
+    return chess_board
+
+# ---------- this will obtain the possible moves values ---------- #
+
+def obtain_possible_moves(chess_board, board_size, previous):
+    # this function will cycle through every piece on the chess board
+    # a blank list of possible moves will be created and then passed into ChessPiece class with update_possible_moves(list)
+
+    for rows in chess_board:
+        for square in rows:
+            # if a piece is in the square
+            if square != ' ':
+                # new list for each piece
+                list_of_moves = []
+                # set current piece
+                current_piece_x, current_piece_y = square.get_position()
+                # run through every combo of (0,0) to (7,7) to calculate available moves
+                for row in range(board_size):
+                    for col in range(board_size):
+                        if legal_movement(chess_board, current_piece_x, current_piece_y, row, col, previous):
+                            list_of_moves.append((row, col))
+                # after looping through the board, set list to chess_piece value
+                square.update_possible_moves(list_of_moves)
+                square_list = square.get_possible_moves()
+                print(f'the piece is: {square} and the possible moves are: {square_list}')
+
+    print('\n ------------- \n')
+    return chess_board
+
+# ---------- this will perform the ending of moves ---------- #
+
+def end_of_move(chess_board, selected_piece_x, selected_piece_y, row, col, board_size, to_do):
+
+    if to_do == 1:
+        # this means en passant was done!
+        chess_board[row][col] = chess_board[selected_piece_x][selected_piece_y]
+        # remove the selected piece from the old spot
+        chess_board[selected_piece_x][selected_piece_y] = ' '
+
+        # capture the pawn by en passant
+        if chess_board[row][col].get_piece() == 'bP':
+            # if black, pawn to capture is above it
+            chess_board[row - 1][col] = ' '
+        elif chess_board[row][col].get_piece() == 'wP':
+            # if white, pawn to capture is below it
+            chess_board[row + 1][col] = ' '
+
+        # update the moved_to and moved_from positions in the chess piece class
+        chess_board[row][col].update_moved_to((row, col))
+        chess_board[row][col].update_moved_from((selected_piece_x, selected_piece_y))
+
+        # track previous move made
+        previous_move = (chess_board[row][col].get_player(),
+                         chess_board[row][col].get_piece(),
+                         chess_board[row][col].get_moved_from(),
+                         chess_board[row][col].get_moved_to()
+                        )
+
+        # update possible moves list
+        chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
+
+    elif to_do == 2:
+        # this means en passant was done!
+        chess_board[row][col] = chess_board[selected_piece_x][selected_piece_y]
+        # remove the selected piece from the old spot
+        chess_board[selected_piece_x][selected_piece_y] = ' '
+        # update the moved_to and moved_from positions in the chess piece class
+        chess_board[row][col].update_moved_to((row, col))
+        chess_board[row][col].update_moved_from((selected_piece_x, selected_piece_y))
+
+        # track previous move made
+        previous_move = (chess_board[row][col].get_player(),
+                         chess_board[row][col].get_piece(),
+                         chess_board[row][col].get_moved_from(),
+                         chess_board[row][col].get_moved_to()
+                         )
+
+        # update possible moves list
+        chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
+
+    elif to_do == 3:
+        # track previous move made
+        previous_move = (chess_board[row][col].get_player(),
+                         chess_board[row][col].get_piece(),
+                         chess_board[row][col].get_moved_from(),
+                         chess_board[row][col].get_moved_to()
+                         )
+        # update possible moves list
+        chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
+
+    return chess_board, previous_move
+
+# ---------- this will perform check logic ---------- #
 
 def check_logic(chess_board):
     # we need to figure out if a check is happening, or will happen for a king movement
