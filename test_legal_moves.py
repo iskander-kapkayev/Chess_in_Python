@@ -197,6 +197,15 @@ class TestLegalMoves(ut.TestCase):
         legal_check_2 = legal_movement(self.chess_board_starting, 4, 4, 5, 5, previous_2)
         self.assertFalse(legal_check_2, "En passant only allowed on first attempt!")
 
+    def test_legal_movement_self_check(self):
+        # scattered board checks
+        # move bP from 3,6 to 4,5
+        self.chess_board_scattered[4][5] = self.chess_board_scattered[3][6]
+        self.chess_board_scattered[3][6] = ' '
+
+        # now the wK can eat the 4,5 bP
+        legal_check_1 = legal_movement(self.chess_board_starting, 5, 4, 4, 5, None)
+        self.assertFalse(legal_check_1, "Not possible; King would be placed into a check position!")
 
     def tearDown(self):
         del self.chess_board_starting

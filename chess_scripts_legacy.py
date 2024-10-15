@@ -152,3 +152,68 @@ def legal_moves(piece, new_x, new_y, all_game_pieces):
             return True
         #eventually add en passant here
         return False
+
+    # ---------- this will perform active check logic ---------- #
+
+    def active_check_logic(chess_board, previous_move):
+        # we need to figure out if a check is happening, or will happen for a king movement
+        #   1) currently, after every move, we recreate the possible moves list for every piece
+        #   2) we can scan through to determine if the possible move is indeed the king's square
+        #   3) if king's square, then next player must move king
+        #   4) this does not encapsulate revealing a check on yourself! (will do something else for that)
+
+        # initiate some vars for processing check
+        prev_player, prev_piece, prev_moved_from, prev_moved_to = previous_move
+        active_check = False
+
+        print(previous_move)
+        print(prev_player)
+        # identify the black and white king
+        if prev_player == 'white':
+            find = 'bK'
+        elif prev_player == 'black':
+            find = 'wK'
+
+        print(find)
+        print(chess_board)
+        # find the current_king
+        for rows in chess_board:
+            print(rows)
+            for chess_piece in rows:
+                print(chess_piece)
+                # non-empty chess piece
+                if chess_piece != ' ':
+                    # if prev player is white, find the black king to scan for attacks
+                    if chess_piece.get_piece() == find:
+                        current_king = chess_piece
+                        print(chess_piece)
+                        print(current_king)
+                        break
+
+        print(current_king)
+        # scan through enemy pieces only, this means the previous player that moved is the enemy
+        # prev_player is the enemy
+
+        king_x, king_y = current_king.get_position()
+        king_set = {(king_x, king_y)}
+
+        for rows in chess_board:
+            for chess_piece in rows:
+                # scan for a non-empty chess piece and one that matches the prev player
+                if chess_piece != ' ' and chess_piece.get_player() == prev_player:
+                    # found an enemy piece, now scan it's possible moves
+                    print(f'king set is: {king_set}')
+                    piece_set = set(chess_piece.get_possible_moves())
+                    print(f'piece set is: {piece_set}')
+                    intersection = king_set.intersection(piece_set)
+                    print(f'intersection set is: {intersection}')
+                    if len(intersection) > 0:
+                        active_check = True
+                        break
+
+        print(active_check)
+
+        # return False if current player is not actively being checked
+        # return True if current player has just been put into check
+
+        return active_check, current_king.get_player()
