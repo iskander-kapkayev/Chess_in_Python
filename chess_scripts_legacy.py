@@ -217,3 +217,60 @@ def legal_moves(piece, new_x, new_y, all_game_pieces):
         # return True if current player has just been put into check
 
         return active_check, current_king.get_player()
+
+    '''
+                # if check, then must leave check no matter what
+                elif active_check is True:
+                    print('check has been reached')
+                    alternate_chess_board = chess_board
+                    # if selecting a piece
+                    if selected_piece:
+                        # make sure players go in order: W, B, W, B, etc.
+                        if ((alternate_chess_board[selected_piece[0]][selected_piece[1]].get_player() == 'white' and player % 2 == 0)
+                                or (alternate_chess_board[selected_piece[0]][
+                                        selected_piece[1]].get_player() == 'black' and player % 2 == 1)):
+                            # make sure a legal move is selected
+                            if legal_movement(alternate_chess_board, selected_piece[0], selected_piece[1], row, col, previous_move, False):
+                                # in case of a king's castle
+                                if (((alternate_chess_board[selected_piece[0]][selected_piece[1]].get_piece() == 'wK')
+                                     or (alternate_chess_board[selected_piece[0]][selected_piece[1]].get_piece() == 'bK'))
+                                        and (abs(selected_piece[1] - col) == 2)):
+                                    # perform king's castle
+                                    alternate_chess_board = king_castle(alternate_chess_board, selected_piece[0], selected_piece[1], row, col)
+                                    # perform end of move actions
+                                    alternate_chess_board, previous_mov, black_king_check, white_king_check = end_of_move(alternate_chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 3)
+                                    # break the cycle if active check is now gone
+                                    chess_board, player, selected_piece = cycle_breaker_check(alternate_chess_board, active_check, player)
+
+                                # in case of an en passant by pawns
+                                elif (((alternate_chess_board[selected_piece[0]][selected_piece[1]].get_piece() == 'bP')
+                                       or (alternate_chess_board[selected_piece[0]][selected_piece[1]].get_piece() == 'wP'))
+                                      and (abs(selected_piece[0] - row) == 1 and abs(selected_piece[1] - col) == 1)
+                                      and (alternate_chess_board[row][col] == ' ')):
+                                    # perform end of move actions for en passant
+                                    alternate_chess_board, previous_move, black_king_check, white_king_check = end_of_move(alternate_chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 1)
+
+                                    # break the cycle if active check is now gone
+                                    active_check = active_check_lookup(player, black_king_check, white_king_check)
+                                    chess_board, player, selected_piece = cycle_breaker_check(alternate_chess_board, active_check, player)
+
+                                # any other legal move
+                                else:
+                                    # perform end of move actions
+                                    alternate_chess_board, previous_move, black_king_check, white_king_check = end_of_move(alternate_chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 2)
+                                    # break the cycle if active check is now gone
+                                    active_check = active_check_lookup(player, black_king_check, white_king_check)
+                                    chess_board, player, selected_piece = cycle_breaker_check(alternate_chess_board, active_check, player)
+
+                            else:
+                                # if not a legal move, reset piece to none
+                                selected_piece = None
+                        else:
+                            # if the player chooses the wrong color, reset piece to none
+                            selected_piece = None
+
+                    elif not selected_piece:
+                        # this will select a piece if none have been selected
+                        if chess_board[row][col] != ' ':
+                            selected_piece = (row, col)
+    '''
