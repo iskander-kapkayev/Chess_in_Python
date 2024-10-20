@@ -202,9 +202,16 @@ class TestLegalMove(ut.TestCase):
         # move bP from 3,6 to 4,5
         self.chess_board_scattered[4][5] = self.chess_board_scattered[3][6]
         self.chess_board_scattered[3][6] = ' '
+        previous = ('black', 'bP', (3, 6), (4, 5))
+        self.chess_board_scattered = obtain_possible_moves(self.chess_board_scattered, 8, previous)
+
+        for rows in self.chess_board_scattered:
+            for square in rows:
+                if square != ' ':
+                    print(f'the name of the piece is : {square.get_piece()}, and the possible moves are: {square.get_possible_moves()}')
 
         # now the wK can eat the 4,5 bP
-        legal_check_1 = legal_conclusion(self.chess_board_starting, 5, 4, 4, 5, None)
+        legal_check_1 = legal_conclusion(self.chess_board_scattered, 5, 4, 4, 5, previous)
         self.assertFalse(legal_check_1, "Not possible; King would be placed into a check position!")
 
     def test_move_counter(self):
