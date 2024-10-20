@@ -1124,3 +1124,67 @@ def castle_movement(board, selected_piece_x, selected_piece_y, new_y):
                             return True
 
     return False
+
+# ---------- gui functions - check castle check positions ---------- #
+
+def castle_movement_v2(board, selected_piece_x, selected_piece_y, new_x, new_y):
+
+    a_chess_board = copy.deepcopy(board)
+    a_chess_board_2 = copy.deepcopy(board)
+    current_player = a_chess_board[selected_piece_x][selected_piece_y].get_player()
+
+    # only need to check the spaces between the selected and new
+    change_in_x = new_x - selected_piece_x
+
+    if change_in_x > 0:
+        a_chess_board[selected_piece_x + 1][new_y] = a_chess_board[selected_piece_x][selected_piece_y]
+        a_chess_board[selected_piece_x][selected_piece_y] = ' '
+        
+
+        black_king_check, white_king_check = player_check_logic(a_chess_board)
+
+        if current_player == 'white' and white_king_check:
+            return False
+        elif current_player == 'black' and black_king_check:
+            return False
+
+        a_chess_board_2[selected_piece_x + 2][new_y] = a_chess_board_2[selected_piece_x][selected_piece_y]
+        a_chess_board_2[selected_piece_x][selected_piece_y] = ' '
+        
+        black_king_check, white_king_check = player_check_logic(a_chess_board_2)
+
+        if current_player == 'white' and white_king_check:
+            return False
+        elif current_player == 'black' and black_king_check:
+            return False
+        
+        return True
+
+    elif change_in_x < 0:
+        a_chess_board[selected_piece_x - 1][new_y] = a_chess_board[selected_piece_x][selected_piece_y]
+        a_chess_board[selected_piece_x][selected_piece_y] = ' '
+        
+
+        black_king_check, white_king_check = player_check_logic(a_chess_board)
+
+        if current_player == 'white' and white_king_check:
+            return False
+        elif current_player == 'black' and black_king_check:
+            return False
+
+        a_chess_board_2[selected_piece_x - 2][new_y] = a_chess_board_2[selected_piece_x][selected_piece_y]
+        a_chess_board_2[selected_piece_x][selected_piece_y] = ' '
+        
+        black_king_check, white_king_check = player_check_logic(a_chess_board_2)
+
+        if current_player == 'white' and white_king_check:
+            return False
+        elif current_player == 'black' and black_king_check:
+            return False
+        
+        return True
+        
+    
+
+
+

@@ -98,7 +98,7 @@ while running:
                                     and (abs(selected_piece[1] - col) == 2)):
 
                                 # double check king movement logic to not pass through a check
-                                if castle_movement(a_chess_board, selected_piece[0], selected_piece[1], col):
+                                if castle_movement_v2(a_chess_board, selected_piece[0], selected_piece[1], row, col):
 
                                     # perform king's castle, obtain new possible moves, obtain check values
                                     king_castle(a_chess_board, selected_piece[0], selected_piece[1], row, col)
