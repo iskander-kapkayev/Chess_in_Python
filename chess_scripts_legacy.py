@@ -274,3 +274,83 @@ def legal_moves(piece, new_x, new_y, all_game_pieces):
                         if chess_board[row][col] != ' ':
                             selected_piece = (row, col)
     '''
+
+    # ---------- activate legal_chess_board checks in movement function ---------- #
+
+
+def run_legal_chess_board(legal_chess_board, selected_piece_x, selected_piece_y, new_x, new_y, current_player):
+    deep_fake = copy.deepcopy(legal_chess_board)
+
+    deep_fake[new_x][new_y] = deep_fake[selected_piece_x][selected_piece_y]
+    deep_fake[selected_piece_x][selected_piece_y] = ' '
+    black_check, white_check = player_check_logic(deep_fake)
+
+    if accidental_self_check(black_check, white_check, current_player) is False:
+        return True
+
+    return False
+
+
+# ---------- this will perform the ending of moves when running the game ---------- #
+'''
+def end_of_move(chess_board, selected_piece_x, selected_piece_y, row, col, board_size, to_do):
+
+    if to_do == 1:
+
+
+    elif to_do == 2:
+
+
+    elif to_do == 3:
+
+
+    return chess_board, previous_move
+'''
+
+# ---------- This function evaluates check logic on a move  ---------- #
+# if legal movement is allowed, then obtain check logic
+# legal movement confirms that no pieces or blocks occur
+
+def legal_conclusion(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
+
+    # deep copy of chess board
+    a_chess_board = copy.deepcopy(chess_board)
+    print(chess_board)
+
+    # run legal movement, must return true to continue
+    if legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
+
+        print('\n-----1-----\n')
+        print(chess_board)
+
+        # now we can undergo check logic
+        current_piece = chess_board[selected_piece_x][selected_piece_y]
+
+        if current_piece.get_piece() == 'wK' or current_piece.get_piece() == 'bK':
+            # include extra logic for king movement ability
+            king_allowed_moves = current_piece.get_possible_moves()
+            if (new_x, new_y) not in king_allowed_moves:
+                return False
+
+        current_player = current_piece.get_player()
+        #legal_move = run_legal_chess_board(a_chess_board, selected_piece_x, selected_piece_y, new_x, new_y, current_player)
+        # check that the legal move didn't activate check on the current player king
+
+        # adjust the piece
+        a_chess_board[new_x][new_y] = current_piece
+        a_chess_board[selected_piece_x][selected_piece_y] = ' '
+
+        print('\n-----2-----\n')
+        print(a_chess_board)
+
+        # find black/white king checks
+        black_check, white_check = player_check_logic(a_chess_board)
+
+        print('\n-----3-----\n')
+        print(a_chess_board)
+
+        if accidental_self_check(black_check, white_check, current_player) is False:
+            return True
+
+    # if not legal movement, then return false
+    return False

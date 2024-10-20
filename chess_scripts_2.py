@@ -15,7 +15,7 @@ class ChessPlayer:
     def __init__(self, player):
         self.player = player
 
-# ---------- Chess Piece falls under the chess player and defines piece attributes ---------- #
+# ---------- Chess Piece falls under the chess player parent class and defines piece attributes ---------- #
 # piece = name of a piece
 # position = current position
 # moved_to = newest position
@@ -118,52 +118,24 @@ def initialize_pieces():
 
 def initialize_chess_board(board_size):
     # create a 2D array to represent the board
-    chess_board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
+    board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
 
     # initialize pieces on chess board
     all_game_pieces = initialize_pieces()
     for game_piece in all_game_pieces:
         x_coord, y_coord = game_piece.get_position()
-        chess_board[x_coord][y_coord] = game_piece
+        board[x_coord][y_coord] = game_piece
 
-    return chess_board
-
-# ---------- This function evaluates check logic on a move  ---------- #
-# if legal movement is allowed, then obtain check logic
-# legal movement confirms that no pieces or blocks occur
-
-def legal_conclusion(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
-
-    a_chess_board = copy.deepcopy(chess_board)
-    # run legal movement, must return true to continue
-    if legal_movement(a_chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
-        # now we can undergo check logic
-        current_piece = a_chess_board[selected_piece_x][selected_piece_y]
-
-        if current_piece.get_piece() == 'wK' or current_piece.get_piece() == 'bK':
-            # include extra logic for king movement ability
-            king_allowed_moves = current_piece.get_possible_moves()
-            if (new_x, new_y) not in king_allowed_moves:
-                return False
-
-        current_player = current_piece.get_player()
-        legal_move = run_legal_chess_board(a_chess_board, selected_piece_x, selected_piece_y, new_x, new_y, current_player)
-
-        # if active check is false, then return false, if true, return true
-
-        return legal_move
-
-    # if not legal movement, then return false
-    return False
+    return board
 
 # ---------- This evaluates the legal movement of a piece - is there anything in the way? ---------- #
 # this function calls on the legal path function before moving on
 # legal movement confirms that no pieces or blocks occur
 
-def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
+def legal_movement(board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
     
-    current_piece = chess_board[selected_piece_x][selected_piece_y]
-    enemy_piece = chess_board[new_x][new_y]
+    current_piece = board[selected_piece_x][selected_piece_y]
+    enemy_piece = board[new_x][new_y]
     change_in_x = new_x - selected_piece_x
     change_in_y = new_y - selected_piece_y
 
@@ -172,7 +144,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
         return False
 
     # first check if the path is legal (aka move makes sense for selected piece)
-    if legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
+    if legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
 
         # if movement is legal for a piece, now check for a piece in pathway of a piece
 
@@ -183,11 +155,11 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                 # make sure nothing exists between new_x
                 if current_piece.get_piece() == 'wP':
                     # if white pawn, check space above it
-                    if chess_board[selected_piece_x - 1][selected_piece_y] == ' ':
+                    if board[selected_piece_x - 1][selected_piece_y] == ' ':
                         return True
                 elif current_piece.get_piece() == 'bP':
                     #  if black pawn, check space below it
-                    if chess_board[selected_piece_x + 1][selected_piece_y] == ' ':
+                    if board[selected_piece_x + 1][selected_piece_y] == ' ':
                         return True
             # else if the pawn moves one space (not a capture, capture is already legalized in legal_path function)
             elif abs(selected_piece_x - new_x) + abs(selected_piece_y - new_y) == 1:
@@ -212,7 +184,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, abs(change_in_y), 1):
-                            if chess_board[selected_piece_x][selected_piece_y - iterator] != ' ':
+                            if board[selected_piece_x][selected_piece_y - iterator] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -225,7 +197,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, abs(change_in_y), 1):
-                            if chess_board[selected_piece_x][selected_piece_y + iterator] != ' ':
+                            if board[selected_piece_x][selected_piece_y + iterator] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -241,7 +213,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, abs(change_in_x), 1):
-                            if chess_board[selected_piece_x - iterator][selected_piece_y] != ' ':
+                            if board[selected_piece_x - iterator][selected_piece_y] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -254,7 +226,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, change_in_x, 1):
-                            if chess_board[selected_piece_x + iterator][selected_piece_y] != ' ':
+                            if board[selected_piece_x + iterator][selected_piece_y] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -282,14 +254,14 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # both x and y decrease
             if change_in_x < 0 and change_in_y < 0:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x - iterator][selected_piece_y - iterator] != ' ':
+                    if board[selected_piece_x - iterator][selected_piece_y - iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
             # only x decreases
             elif change_in_x < 0 < change_in_y:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x - iterator][selected_piece_y + iterator] != ' ':
+                    if board[selected_piece_x - iterator][selected_piece_y + iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -297,7 +269,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # only y decreases
             elif change_in_y < 0 < change_in_x:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x + iterator][selected_piece_y - iterator] != ' ':
+                    if board[selected_piece_x + iterator][selected_piece_y - iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -305,7 +277,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # both x and y increase
             elif change_in_x > 0 and change_in_y > 0:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x + iterator][selected_piece_y + iterator] != ' ':
+                    if board[selected_piece_x + iterator][selected_piece_y + iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -326,7 +298,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, abs(change_in_y), 1):
-                            if chess_board[selected_piece_x][selected_piece_y - iterator] != ' ':
+                            if board[selected_piece_x][selected_piece_y - iterator] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -339,7 +311,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, change_in_y, 1):
-                            if chess_board[selected_piece_x][selected_piece_y + iterator] != ' ':
+                            if board[selected_piece_x][selected_piece_y + iterator] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -356,7 +328,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, abs(change_in_x), 1):
-                            if chess_board[selected_piece_x - iterator][selected_piece_y] != ' ':
+                            if board[selected_piece_x - iterator][selected_piece_y] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -369,7 +341,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
                             return True
                     else:
                         for iterator in range(1, change_in_x, 1):
-                            if chess_board[selected_piece_x + iterator][selected_piece_y] != ' ':
+                            if board[selected_piece_x + iterator][selected_piece_y] != ' ':
                                 # break loop and return false if a piece is found in the way!
                                 return False
                     # else return true if no pieces found in the way
@@ -379,7 +351,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # both x and y decrease
             elif change_in_x < 0 and change_in_y < 0:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x - iterator][selected_piece_y - iterator] != ' ':
+                    if board[selected_piece_x - iterator][selected_piece_y - iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -387,7 +359,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # only x decreases
             elif change_in_x < 0 < change_in_y:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x - iterator][selected_piece_y + iterator] != ' ':
+                    if board[selected_piece_x - iterator][selected_piece_y + iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -395,7 +367,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # only y decreases
             elif change_in_y < 0 < change_in_x:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x + iterator][selected_piece_y - iterator] != ' ':
+                    if board[selected_piece_x + iterator][selected_piece_y - iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -403,7 +375,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # both x and y increase
             elif change_in_x > 0 and change_in_y > 0:
                 for iterator in range(1, abs(change_in_x), 1):
-                    if chess_board[selected_piece_x + iterator][selected_piece_y + iterator] != ' ':
+                    if board[selected_piece_x + iterator][selected_piece_y + iterator] != ' ':
                         return False
                 # else return true if no pieces found in the way
                 return True
@@ -418,7 +390,7 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
             # now must consider enemy pieces in range
             # we can use the possible move list to make a move
             '''
-            for rows in chess_board:
+            for rows in board:
                 for square in rows:
                     if square != ' ':
                         if square.get_player() != current_piece.get_player():
@@ -435,10 +407,10 @@ def legal_movement(chess_board, selected_piece_x, selected_piece_y, new_x, new_y
 # ---------- This evaluates the legal path of a piece - where can a piece move? ---------- #
 # this function should return true if a piece can make a move
 
-def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
+def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous):
     # select the current piece we are looking at, and the 'enemy' piece if exists
-    current_piece = chess_board[selected_piece_x][selected_piece_y]
-    enemy_piece = chess_board[new_x][new_y]
+    current_piece = board[selected_piece_x][selected_piece_y]
+    enemy_piece = board[new_x][new_y]
     change_in_x = new_x - selected_piece_x
     change_in_y = new_y - selected_piece_y
 
@@ -517,7 +489,7 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                                 # if the pawn moved perfectly to the side of your pawn then you can capture as if no double movement
                                 if new_x == prev_moved_to_x + 1 and new_y == prev_moved_to_y:
                                     # the conditions were met, so en passant is possible!
-                                    chess_board[prev_moved_to_x][prev_moved_to_y] = ' '
+                                    board[prev_moved_to_x][prev_moved_to_y] = ' '
                                     return True
                 # if the other player is different
                 elif enemy_piece != ' ':
@@ -598,21 +570,23 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
     # we can cycle list of possible moves to make sure that he is not in the range of an enemy piece
     elif current_piece.get_piece() == 'wK' or current_piece.get_piece() == 'bK':
         # check if king is trying to do a castle
+
         if (abs(change_in_x) == 0
             and abs(change_in_y) == 2
             and current_piece.moved() is False):
+
             # initiate alternative chess board to validate the movement for check logic
-            king_chess_board = copy.deepcopy(chess_board)
+            king_chess_board = copy.deepcopy(board)
             current_player = current_piece.get_player()
 
             # is king moving left or right?
             if change_in_y > 0:
                 # king is moving right
-                if current_piece.get_player() == 'white' and chess_board[7][7] != ' ' and chess_board[7][7].get_piece() == 'wR':
-                    if chess_board[7][7].moved() is False:
+                if current_player == 'white' and board[7][7] != ' ' and board[7][7].get_piece() == 'wR':
+                    if board[7][7].moved() is False:
                         # white king and white rook, check all spaces between it and the rook
                         # check 7,5 and 7,6 for any pieces and for possible checks
-                        if chess_board[7][5] == ' ' and chess_board[7][6] == ' ':
+                        if board[7][5] == ' ' and board[7][6] == ' ':
                             # check in between first spot for a check
                             king_chess_board[7][5] = king_chess_board[selected_piece_x][selected_piece_y]
                             king_chess_board[selected_piece_x][selected_piece_y] = ' '
@@ -624,11 +598,11 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                                 black_check, white_check = player_check_logic(king_chess_board)
                                 if accidental_self_check(black_check, white_check, current_player) is False:
                                     return True
-                if current_piece.get_player() == 'black' and chess_board[0][7] != ' ' and chess_board[0][7].get_piece() == 'bR':
-                    if chess_board[0][7].moved() is False:
+                if current_player == 'black' and board[0][7] != ' ' and board[0][7].get_piece() == 'bR':
+                    if board[0][7].moved() is False:
                         # white king and white rook, check all spaces between it and the rook
                         # check 0,5 and 0,6 for any pieces and possible checks
-                        if chess_board[0][5] == ' ' and chess_board[0][6] == ' ':
+                        if board[0][5] == ' ' and board[0][6] == ' ':
                             # check in between first spot for a check
                             king_chess_board[0][5] = king_chess_board[selected_piece_x][selected_piece_y]
                             king_chess_board[selected_piece_x][selected_piece_y] = ' '
@@ -642,11 +616,11 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                                     return True
             if change_in_y < 0:
                 # king is moving left
-                if current_piece.get_player() == 'white' and chess_board[7][0] != ' ' and chess_board[7][0].get_piece() == 'wR':
-                    if chess_board[7][0].moved() is False:
+                if current_player == 'white' and board[7][0] != ' ' and board[7][0].get_piece() == 'wR':
+                    if board[7][0].moved() is False:
                         # white king and white rook, check all spaces between it and the rook
                         # check 7,1 and 7,2 and 7,3 for any pieces
-                        if chess_board[7][1] == ' ' and chess_board[7][2] == ' ' and chess_board[7][3] == ' ':
+                        if board[7][1] == ' ' and board[7][2] == ' ' and board[7][3] == ' ':
                             # check in between first spot for a check
                             king_chess_board[7][3] = king_chess_board[selected_piece_x][selected_piece_y]
                             king_chess_board[selected_piece_x][selected_piece_y] = ' '
@@ -658,11 +632,11 @@ def legal_path(chess_board, selected_piece_x, selected_piece_y, new_x, new_y, pr
                                 black_check, white_check = player_check_logic(king_chess_board)
                                 if accidental_self_check(black_check, white_check, current_player) is False:
                                     return True
-                if current_piece.get_player() == 'black' and chess_board[0][0] != ' ' and chess_board[0][0].get_piece() == 'bR':
-                    if chess_board[0][0].moved() is False:
+                if current_player == 'black' and board[0][0] != ' ' and board[0][0].get_piece() == 'bR':
+                    if board[0][0].moved() is False:
                         # white king and white rook, check all spaces between it and the rook
                         # check 0,1 and 0,2 and 0,3 for any pieces
-                        if chess_board[0][1] == ' ' and chess_board[0][2] == ' ' and chess_board[0][3] == ' ':
+                        if board[0][1] == ' ' and board[0][2] == ' ' and board[0][3] == ' ':
                             # check in between first spot for a check
                             king_chess_board[0][3] = king_chess_board[selected_piece_x][selected_piece_y]
                             king_chess_board[selected_piece_x][selected_piece_y] = ' '
@@ -721,15 +695,15 @@ def board_for_testing_scattered():
 def initialize_chess_board_testing_scattered(board_size):
 
     # create a 2D array to represent the board
-    chess_board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
+    board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
 
     # initialize pieces on chess board
     all_game_pieces = initialize_pieces_testing_scattered()
     for game_piece in all_game_pieces:
         x, y = game_piece.get_position()
-        chess_board[x][y] = game_piece
+        board[x][y] = game_piece
 
-    return chess_board
+    return board
 
 # ---------- testing! this initializes scattered chess board pieces ---------- #
 
@@ -760,71 +734,68 @@ def initialize_pieces_testing_scattered():
 
 # ---------- this will apply a castle ---------- #
 
-def king_castle(chess_board, selected_piece_x, selected_piece_y, new_row, new_col):
-    a_chess_board = copy.deepcopy(chess_board)
+def king_castle(board, selected_piece_x, selected_piece_y, new_row, new_col):
 
     # initiate current piece and change in y vars
-    current_piece = a_chess_board[selected_piece_x][selected_piece_y]
+    current_piece = board[selected_piece_x][selected_piece_y]
     change_in_y = new_col - selected_piece_y
 
     # if change in y is negative
     if change_in_y < 0:
         # move king to castle position and remove old king piece
-        a_chess_board[new_row][new_col] = current_piece
-        a_chess_board[selected_piece_x][selected_piece_y] = ' '
+        board[new_row][new_col] = current_piece
+        board[selected_piece_x][selected_piece_y] = ' '
         # update chess piece class
-        a_chess_board[new_row][new_col].update_moved_to((new_row, new_col))
-        a_chess_board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
+        board[new_row][new_col].update_moved_to((new_row, new_col))
+        board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
         # move rook to castle position, and remove old rook piece
         if current_piece.piece == 'wK':
-            a_chess_board[new_row][new_col + 1] = a_chess_board[7][0]
-            a_chess_board[7][0] = ' '
+            board[new_row][new_col + 1] = board[7][0]
+            board[7][0] = ' '
             # update chess piece class
-            a_chess_board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
-            a_chess_board[new_row][new_col + 1].update_moved_from((7, 0))
+            board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
+            board[new_row][new_col + 1].update_moved_from((7, 0))
         elif current_piece.piece == 'bK':
-            a_chess_board[new_row][new_col + 1] = a_chess_board[0][0]
-            a_chess_board[0][0] = ' '
+            board[new_row][new_col + 1] = board[0][0]
+            board[0][0] = ' '
             # update chess piece class
-            a_chess_board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
-            a_chess_board[new_row][new_col + 1].update_moved_from((0, 0))
+            board[new_row][new_col + 1].update_moved_to((new_row, new_col + 1))
+            board[new_row][new_col + 1].update_moved_from((0, 0))
     elif change_in_y > 0:
         # move king to castle position and remove old king piece
-        a_chess_board[new_row][new_col] = current_piece
-        a_chess_board[selected_piece_x][selected_piece_y] = ' '
+        board[new_row][new_col] = current_piece
+        board[selected_piece_x][selected_piece_y] = ' '
         # update chess piece class
-        a_chess_board[new_row][new_col].update_moved_to((new_row, new_col))
-        a_chess_board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
+        board[new_row][new_col].update_moved_to((new_row, new_col))
+        board[new_row][new_col].update_moved_from((selected_piece_x, selected_piece_y))
         # move rook to castle position, and remove old rook piece
         if current_piece.piece == 'wK':
-            a_chess_board[new_row][new_col - 1] = a_chess_board[7][7]
-            a_chess_board[7][7] = ' '
+            board[new_row][new_col - 1] = board[7][7]
+            board[7][7] = ' '
             # update chess piece class
-            a_chess_board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
-            a_chess_board[new_row][new_col - 1].update_moved_from((7, 7))
+            board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
+            board[new_row][new_col - 1].update_moved_from((7, 7))
         elif current_piece.piece == 'bK':
-            a_chess_board[new_row][new_col - 1] = a_chess_board[0][7]
-            a_chess_board[0][7] = ' '
+            board[new_row][new_col - 1] = board[0][7]
+            board[0][7] = ' '
             # update chess piece class
-            a_chess_board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
-            a_chess_board[new_row][new_col - 1].update_moved_from((0, 7))
-
-    return a_chess_board
+            board[new_row][new_col - 1].update_moved_to((new_row, new_col - 1))
+            board[new_row][new_col - 1].update_moved_from((0, 7))
 
 # ---------- this will obtain the possible moves values for each piece after a move is completed  ---------- #
 
-def obtain_possible_moves(chess_board, previous):
+def obtain_possible_moves(board, previous):
     # this function will cycle through every piece on the chess board
     # a blank list of possible moves will be created and then passed into ChessPiece class with update_possible_moves(list)
 
-    # this is a chess board
+    # this is a chess board size
     board_size = 8
 
     # assign some vars before processing
     black_king = None
     white_king = None
 
-    for rows in chess_board:
+    for rows in board:
         for square in rows:
             # if a piece is in the square
             if square != ' ':
@@ -841,7 +812,7 @@ def obtain_possible_moves(chess_board, previous):
                 for row in range(board_size):
                     for col in range(board_size):
                         #print(f'this is the row: {row} and the col: {col}')
-                        if legal_conclusion(chess_board, current_piece_x, current_piece_y, row, col, previous):
+                        if legal_movement(board, current_piece_x, current_piece_y, row, col, previous):
                             list_of_moves.append((row, col))
                 # after looping through the board, set list to chess_piece value
                 square.update_possible_moves(list_of_moves)
@@ -852,7 +823,7 @@ def obtain_possible_moves(chess_board, previous):
     white_king_moves = white_king.get_possible_moves()
 
     # assess moves for black king
-    for rows in chess_board:
+    for rows in board:
         for square in rows:
             if square != ' ':
                 if square.get_player() == 'white':
@@ -864,7 +835,7 @@ def obtain_possible_moves(chess_board, previous):
                             black_king_moves.remove(move)
 
     # assess moves for white king
-    for rows in chess_board:
+    for rows in board:
         for square in rows:
             if square != ' ':
                 if square.get_player() == 'black':
@@ -877,27 +848,13 @@ def obtain_possible_moves(chess_board, previous):
 
     black_x, black_y = black_king.get_position()
     white_x, white_y = white_king.get_position()
-    chess_board[black_x][black_y].update_possible_moves(black_king_moves)
-    chess_board[white_x][white_y].update_possible_moves(white_king_moves)
+    board[black_x][black_y].update_possible_moves(black_king_moves)
+    board[white_x][white_y].update_possible_moves(white_king_moves)
 
-# ---------- this will perform the ending of moves when running the game ---------- #
-'''
-def end_of_move(chess_board, selected_piece_x, selected_piece_y, row, col, board_size, to_do):
 
-    if to_do == 1:
-        
-
-    elif to_do == 2:
-        
-
-    elif to_do == 3:
-        
-
-    return chess_board, previous_move
-'''
 # ---------- this will break the game cycle for a check ---------- #
 
-def cycle_breaker_check(chess_board, active_check, player):
+def cycle_breaker_check(board, active_check, player):
 
     # break the cycle if active check is now gone
     if active_check is False:
@@ -906,11 +863,11 @@ def cycle_breaker_check(chess_board, active_check, player):
         # reset piece to none
         selected_piece = None
         # return new chess board, player count, and None for selection
-        return chess_board, player, selected_piece
+        return board, player, selected_piece
 
 # ---------- this will perform player check logic ---------- #
 
-def player_check_logic(chess_board):
+def player_check_logic(board):
     # I will look to see if the black king or white king is being checked
     # will return both statuses of the black/white king
 
@@ -925,7 +882,7 @@ def player_check_logic(chess_board):
     find_wk = 'wK'
 
     # find the kings
-    for rows in chess_board:
+    for rows in board:
         for chess_piece in rows:
             # non-empty chess piece
             if chess_piece != ' ':
@@ -943,7 +900,7 @@ def player_check_logic(chess_board):
     white_king_moves = (white_king_x, white_king_y)
 
     # run for black king first
-    for rows in chess_board:
+    for rows in board:
         for chess_piece in rows:
             # scan for a non-empty chess piece and one that matches the prev player
             if chess_piece != ' ':
@@ -955,7 +912,7 @@ def player_check_logic(chess_board):
                         break
 
     # run for white king second
-    for rows in chess_board:
+    for rows in board:
         for chess_piece in rows:
             # scan for a non-empty chess piece and one that matches the prev player
             if chess_piece != ' ':
@@ -966,7 +923,7 @@ def player_check_logic(chess_board):
                         white_king_check = True
                         break
 
-    # return True if check on king, or return false if not
+    # return True if checks on king, or return false if not
     return black_king_check, white_king_check
 
 # ---------- function to check if the player has accidentally checked themself ---------- #
@@ -998,23 +955,9 @@ def active_check_lookup(player, black_check, white_check):
     # return false if no active check
     return False
 
-# ---------- activate legal_chess_board checks in movement function ---------- #
+# ---------- gui functions - function to count possible moves ---------- #
 
-def run_legal_chess_board(legal_chess_board, selected_piece_x, selected_piece_y, new_x, new_y, current_player):
-
-    legal_chess_board[new_x][new_y] = legal_chess_board[selected_piece_x][selected_piece_y]
-    legal_chess_board[selected_piece_x][selected_piece_y] = ' '
-    black_check, white_check = player_check_logic(legal_chess_board)
-
-    if accidental_self_check(black_check, white_check, current_player) is False:
-        return True
-
-    return False
-
-
-# ---------- function to count possible moves ---------- #
-
-def count_moves(chess_board, player):
+def count_moves(board, player):
 
     # set current_player to remove reference before assignment problem
     current_player = ''
@@ -1029,7 +972,7 @@ def count_moves(chess_board, player):
     move_counter = 0
 
     # scan all moves for the current player
-    for rows in chess_board:
+    for rows in board:
         for chess_piece in rows:
             # scan for a non-empty chess piece and one that matches the current player
             if chess_piece != ' ':
@@ -1039,3 +982,145 @@ def count_moves(chess_board, player):
                     move_counter += len(get_moves)
 
     return move_counter
+
+# ---------- gui functions - perform an en passant ---------- #
+
+def en_passant(board, selected_x, selected_y, new_x, new_y):
+    
+    # perform en passant
+    board[new_x][new_y] = board[selected_x][selected_y]
+    board[selected_x][selected_y] = ' '
+
+    # capture the pawn by en passant
+    if board[new_x][new_y].get_piece() == 'bP':
+        # if black, pawn to capture is above it
+        board[new_x - 1][new_y] = ' '
+    elif board[new_x][new_y].get_piece() == 'wP':
+        # if white, pawn to capture is below it
+        board[new_x + 1][new_y] = ' '
+
+    # update the moved_to and moved_from positions in the chess piece class
+    board[new_x][new_y].update_moved_to((new_x, new_y))
+    board[new_x][new_y].update_moved_from((selected_x, selected_y))
+
+
+# ---------- gui functions - perform any legal movement ---------- #
+
+def any_legal_move(board, selected_x, selected_y, new_x, new_y):
+    
+    # this means a regular legal move was done
+    board[new_x][new_y] = board[selected_x][selected_y]
+    
+    # remove the selected piece from the old spot
+    board[selected_x][selected_y] = ' '
+    
+    # update the moved_to and moved_from positions in the chess piece class
+    board[new_x][new_y].update_moved_to((new_x, new_y))
+    board[new_x][new_y].update_moved_from((selected_x, selected_y))
+
+# ---------- gui functions - assume previous move ---------- #
+
+def assume_prev_move(board, selected_x, selected_y):
+    
+    # track previous move made
+    previous_move = (board[selected_x][selected_y].get_player(),
+                     board[selected_x][selected_y].get_piece(),
+                     board[selected_x][selected_y].get_moved_from(),
+                     board[selected_x][selected_y].get_moved_to()
+                     )
+
+    return previous_move
+
+# ---------- gui functions - retain previous move ---------- #
+
+def retain_prev_move(board, new_x, new_y):
+    # track previous move made
+    previous_move = (board[new_x][new_y].get_player(),
+                     board[new_x][new_y].get_piece(),
+                     board[new_x][new_y].get_moved_from(),
+                     board[new_x][new_y].get_moved_to()
+                     )
+
+    return previous_move
+
+# ---------- gui functions - check castle check positions ---------- #
+
+def castle_movement(board, selected_piece_x, selected_piece_y, new_y):
+
+    # initiate alternative chess board to validate the movement for check logic
+    king_chess_board = copy.deepcopy(board)
+    current_piece = king_chess_board[selected_piece_x][selected_piece_y]
+    current_player = current_piece.get_player()
+    change_in_y = new_y - selected_piece_y
+
+    # is king moving left or right?
+    if change_in_y > 0:
+        # king is moving right
+        if current_player == 'white' and board[7][7] != ' ' and board[7][7].get_piece() == 'wR':
+            if board[7][7].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 7,5 and 7,6 for any pieces and for possible checks
+                if board[7][5] == ' ' and board[7][6] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[7][5] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[7][6] = king_chess_board[7][5]
+                        king_chess_board[7][5] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+        if current_player == 'black' and board[0][7] != ' ' and board[0][7].get_piece() == 'bR':
+            if board[0][7].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 0,5 and 0,6 for any pieces and possible checks
+                if board[0][5] == ' ' and board[0][6] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[0][5] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[0][6] = king_chess_board[0][5]
+                        king_chess_board[0][5] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+    if change_in_y < 0:
+        # king is moving left
+        if current_player == 'white' and board[7][0] != ' ' and board[7][0].get_piece() == 'wR':
+            if board[7][0].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 7,1 and 7,2 and 7,3 for any pieces
+                if board[7][1] == ' ' and board[7][2] == ' ' and board[7][3] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[7][3] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[7][2] = king_chess_board[7][3]
+                        king_chess_board[7][3] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+        if current_player == 'black' and board[0][0] != ' ' and board[0][0].get_piece() == 'bR':
+            if board[0][0].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 0,1 and 0,2 and 0,3 for any pieces
+                if board[0][1] == ' ' and board[0][2] == ' ' and board[0][3] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[0][3] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[0][2] = king_chess_board[0][3]
+                        king_chess_board[0][3] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+
+    return False

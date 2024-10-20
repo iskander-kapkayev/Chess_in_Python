@@ -199,7 +199,7 @@ class TestLegalMove(ut.TestCase):
         legal_check_2 = legal_movement(self.chess_board_starting, 4, 4, 5, 5, previous_2)
         self.assertFalse(legal_check_2, "En passant only allowed on first attempt!")
 
-    def test_legal_conclusion_self_check(self):
+    def test_self_check(self):
         # scattered board checks
         # move bP from 3,6 to 4,5
         self.chess_board_scattered[4][5] = self.chess_board_scattered[3][6]
@@ -337,7 +337,7 @@ class TestLegalMove(ut.TestCase):
                     selected_piece = (row, col)
 
         self.assertEqual(self.chess_board_starting[6][4], ' ', "the pawn should have moved")
-        self.assertEqual(self.chess_board_starting[4][4], 'wP', "the pawn is now here")
+        self.assertEqual(self.chess_board_starting[4][4].get_piece(), 'wP', "the pawn is now here")
         self.assertEqual(self.chess_board_starting[4][4].get_possible_moves(), [(3,4)], "the only possible pawn move is now 3, 5")
         # since the king was revealed, the wK now has a new move
         self.assertEqual(self.chess_board_starting[7][4].get_possible_moves(), [(6, 4)],"the king now can move to 6, 4")
