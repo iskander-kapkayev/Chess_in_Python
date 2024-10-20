@@ -706,7 +706,6 @@ def board_for_testing():
     # initialize game pieces and chess board
     board_size = 8
     starting_chess_board = initialize_chess_board(board_size)
-    starting_chess_board = obtain_possible_moves(starting_chess_board, board_size, None)
     return starting_chess_board
 
 # ---------- testing! initialize the scattered chess board ---------- #
@@ -720,6 +719,7 @@ def board_for_testing_scattered():
 # ---------- testing! this is a scattered chess board for evaluation ---------- #
 
 def initialize_chess_board_testing_scattered(board_size):
+
     # create a 2D array to represent the board
     chess_board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
 
@@ -813,9 +813,16 @@ def king_castle(chess_board, selected_piece_x, selected_piece_y, new_row, new_co
 
 # ---------- this will obtain the possible moves values for each piece after a move is completed  ---------- #
 
-def obtain_possible_moves(chess_board, board_size, previous):
+def obtain_possible_moves(chess_board, previous):
     # this function will cycle through every piece on the chess board
     # a blank list of possible moves will be created and then passed into ChessPiece class with update_possible_moves(list)
+
+    # this is a chess board
+    board_size = 8
+
+    # assign some vars before processing
+    black_king = None
+    white_king = None
 
     for rows in chess_board:
         for square in rows:
@@ -834,7 +841,7 @@ def obtain_possible_moves(chess_board, board_size, previous):
                 for row in range(board_size):
                     for col in range(board_size):
                         #print(f'this is the row: {row} and the col: {col}')
-                        if legal_movement(chess_board, current_piece_x, current_piece_y, row, col, previous):
+                        if legal_conclusion(chess_board, current_piece_x, current_piece_y, row, col, previous):
                             list_of_moves.append((row, col))
                 # after looping through the board, set list to chess_piece value
                 square.update_possible_moves(list_of_moves)
@@ -873,8 +880,6 @@ def obtain_possible_moves(chess_board, board_size, previous):
     chess_board[black_x][black_y].update_possible_moves(black_king_moves)
     chess_board[white_x][white_y].update_possible_moves(white_king_moves)
 
-    return chess_board
-
 # ---------- this will perform the ending of moves when running the game ---------- #
 '''
 def end_of_move(chess_board, selected_piece_x, selected_piece_y, row, col, board_size, to_do):
@@ -912,6 +917,8 @@ def player_check_logic(chess_board):
     # initiate some vars for processing check
     black_king_check = False
     white_king_check = False
+    black_king = None
+    white_king = None
 
     # identify the black and white king
     find_bk = 'bK'
@@ -1008,6 +1015,9 @@ def run_legal_chess_board(legal_chess_board, selected_piece_x, selected_piece_y,
 # ---------- function to count possible moves ---------- #
 
 def count_moves(chess_board, player):
+
+    # set current_player to remove reference before assignment problem
+    current_player = ''
 
     # identify current player
     if player % 2 == 0:

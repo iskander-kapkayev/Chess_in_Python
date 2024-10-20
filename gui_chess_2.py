@@ -47,7 +47,7 @@ square_size = 100 # pixel size
 
 # initialize game pieces and chess board
 chess_board = initialize_chess_board(board_size)
-chess_board = obtain_possible_moves(chess_board, board_size, None)
+obtain_possible_moves(chess_board, None)
 
 # ---------- game loop that will keep working until game ends ---------- #
 
@@ -56,10 +56,13 @@ running = True # this tells the game to keep running
 selected_piece = None # this will represent the X, Y coordinate of the selected piece
 player = 0 # mod 2 will return 0 or 1, player white or black
 active_check = False # tells the game to focus on a player
-a_chess_board = None # alternative chess board used for evaluating an in check position
 
 while running:
     for event in pygame.event.get():
+
+        # alternative chess board used for evaluating an in check position
+        a_chess_board = None
+
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -67,19 +70,21 @@ while running:
             row = y // square_size
             col = x // square_size
 
-            # while not in check, play the game normally
-
+            # when not in check, play the game normally
             if not active_check:
 
+                # when piece is selected
                 if selected_piece:
+
+                    # set current piece for ease
                     current_piece = chess_board[selected_piece[0]][selected_piece[1]]
 
                     # make sure players go in order: W, B, W, B, etc.
                     if((current_piece.get_player() == 'white' and player % 2 == 0)
                             or (current_piece.get_player() == 'black' and player % 2 == 1)):
 
-                        # make sure a legal move is selected
-                        if legal_conclusion(chess_board, selected_piece[0], selected_piece[1], row, col, previous_move):
+                        # make sure a legal move is selected from possible moves list
+                        if (row, col) in current_piece.get_possible_moves():
 
                             # in case of a king's castle
                             if (((current_piece.get_piece() == 'wK')
@@ -87,17 +92,21 @@ while running:
                                     and (abs(selected_piece[1] - col) == 2)):
                                 # perform king's castle
                                 chess_board = king_castle(chess_board, selected_piece[0], selected_piece[1], row, col)
+
                                 # perform end of move actions
 
-                                #chess_board, previous_move = end_of_move(chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 3)
                                 # track previous move made
                                 previous_move = (chess_board[row][col].get_player(),
                                                  chess_board[row][col].get_piece(),
                                                  chess_board[row][col].get_moved_from(),
                                                  chess_board[row][col].get_moved_to()
                                                  )
-                                # update possible moves list
-                                chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
+
+
+                                # update possible moves list because change has occurred
+                                obtain_possible_moves(chess_board, previous_move)
+
+                                # check to see if either player is in check (self check would not happen at this point)
                                 black_king_check, white_king_check = player_check_logic(chess_board)
 
                             # in case of an en passant by pawns
@@ -105,8 +114,10 @@ while running:
                                    or (current_piece.get_piece() == 'wP'))
                                   and (abs(selected_piece[0] - row) == 1 and abs(selected_piece[1] - col) == 1)
                                   and (a_chess_board[row][col] == ' ')):
+
                                 # perform end of move actions for en passant
                                 #chess_board, previous_move = end_of_move(chess_board, selected_piece[0] , selected_piece[1], row, col, board_size, 1)
+
                                 # this means en passant was done!
                                 chess_board[row][col] = chess_board[selected_piece[0]][selected_piece[1]]
                                 # remove the selected piece from the old spot
@@ -131,13 +142,17 @@ while running:
                                                  chess_board[row][col].get_moved_to()
                                                  )
 
-                                # update possible moves list
-                                chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
+                                # update possible moves list because change has occurred
+                                obtain_possible_moves(chess_board, previous_move)
+
+                                # check to see if either player is in check (self check would not happen at this point)
                                 black_king_check, white_king_check = player_check_logic(chess_board)
 
-                            # any other legal move
+
                             else:
+                                # any other legal move
                                 # perform end of move actions
+
                                 # this means a regular legal move was done
                                 chess_board[row][col] = chess_board[selected_piece[0]][selected_piece[1]]
                                 # remove the selected piece from the old spot
@@ -153,27 +168,34 @@ while running:
                                                  chess_board[row][col].get_moved_to()
                                                  )
 
-                                # update possible moves list
-                                chess_board = obtain_possible_moves(chess_board, board_size, previous_move)
-                                for rows in chess_board:
-                                    for square in rows:
-                                        if square != ' ':
-                                            print(f'the piece is: {square.get_piece()} and the moves are: {square.get_possible_moves()}')
+                                # update possible moves list because change has occurred
+                                obtain_possible_moves(chess_board, previous_move)
+
+                                # check to see if either player is in check (self check would not happen at this point)
                                 black_king_check, white_king_check = player_check_logic(chess_board)
-                                print(f'\n---------\n')
-                            # iterate to next player, evaluate a check, and reset piece to none
+
+                            # iterate to next player
                             player += 1
+
+                            # update active_check, should return true if the new iterated player is in check
                             active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                            # print to console
+                            print(f'{current_piece.get_player()} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                            # reset piece
                             selected_piece = None
+
                         else:
-                            # if not a legal move, reset piece to none
+                            # if move is not in legal move set
                             selected_piece = None
+
                     else:
                         # if wrong color
                         selected_piece = None
 
                 elif not selected_piece:
-                    # this will select a piece if none have been selected
+                    # this is where the reset piece points to, do not allow blank spaces to be selected
                     if chess_board[row][col] != ' ':
                         selected_piece = (row, col)
 
