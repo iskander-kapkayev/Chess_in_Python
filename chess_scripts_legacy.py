@@ -354,3 +354,34 @@ def legal_conclusion(chess_board, selected_piece_x, selected_piece_y, new_x, new
 
     # if not legal movement, then return false
     return False
+
+
+# ---------- gui functions - assume previous move ---------- #
+
+def assume_prev_move(board, selected_x, selected_y):
+    # track previous move made
+    previous_move = (board[selected_x][selected_y].get_player(),
+                     board[selected_x][selected_y].get_piece(),
+                     board[selected_x][selected_y].get_moved_from(),
+                     board[selected_x][selected_y].get_moved_to()
+                     )
+
+    return previous_move
+
+
+escape_mate = False
+for rows in chess_board:
+    for square in rows:
+        if square != ' ':
+            if square.get_player() != current_player:
+                for move in square.get_possible_moves():
+                    b_chess_board = copy.deepcopy(chess_board)
+                    any_legal_move(b_chess_board, square.get_position()[0], square.get_position()[1], move[0], move[1])
+                    previous_move = retain_prev_move(b_chess_board, move[0], move[1])
+                    obtain_possible_moves(b_chess_board, previous_move)
+                    black_king_check, white_king_check = player_check_logic(b_chess_board)
+                    if accidental_self_check(black_king_check, white_king_check, square.get_player()) is False:
+                        # this means that a move exists to get us out of check
+                        escape_mate = True
+if escape_mate is False:
+    running = False

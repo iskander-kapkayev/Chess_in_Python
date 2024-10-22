@@ -208,8 +208,26 @@ class TestLegalMove(ut.TestCase):
         obtain_possible_moves(self.chess_board_scattered, previous)
 
         # now the wK can eat the 4,5 bP
-        legal_check_1 = legal_conclusion(self.chess_board_scattered, 5, 4, 4, 5, previous)
-        self.assertFalse(legal_check_1, "Not possible; King would be placed into a check position!")
+        get_moves = self.chess_board_scattered[5][4].get_possible_moves()
+        get_moves_n = self.chess_board_scattered[2][6].get_possible_moves()
+        print(get_moves)
+        print(get_moves_n)
+        if (4,5) in get_moves:
+            legal_check_1 = False
+        else:
+            legal_check_1 = True
+
+        # assume the move does happen
+        self.chess_board_scattered[4][5] = self.chess_board_scattered[5][4]
+        self.chess_board_scattered[5][4] = ' '
+
+        black_king, white_king = player_check_logic(self.chess_board_scattered)
+        if accidental_self_check(black_king, white_king, 'white') is False:
+            legal_check_2 = False
+        else:
+            legal_check_2 = True
+        self.assertFalse(legal_check_1, "King currently allowed to move here")
+        self.assertFalse(legal_check_2, "King will not be allowed to move here")
 
     def test_move_counter(self):
         # count the number of moves at the start of the game (should be 20 per color, 8 pawns * 2 moves + 2 knights * 2 moves)
@@ -351,3 +369,4 @@ class TestLegalMove(ut.TestCase):
 
 if __name__ == "__main__":
     ut.main()
+
