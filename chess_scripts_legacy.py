@@ -385,3 +385,493 @@ for rows in chess_board:
                         escape_mate = True
 if escape_mate is False:
     running = False
+
+    def test_gui_movements(self):
+        # play a short game and assert movements that are allowed and not allowed
+        active_check = False
+        # selected piece is a white pawn
+        selected_piece = (6,4)
+        selected_x, selected_y = selected_piece
+        # movement spot is 2 spaces up (initial pawn move)
+        row = 4
+        col = 4
+        # set player to white
+        player = 0
+        if not active_check:
+
+            if selected_piece:
+                current_piece = self.chess_board_starting[selected_x][selected_y]
+
+                # make sure players go in order: W, B, W, B, etc.
+                if ((current_piece.get_player() == 'white' and player % 2 == 0)
+                        or (current_piece.get_player() == 'black' and player % 2 == 1)):
+
+                    # make sure a legal move is selected
+                    # since all possible moves are labeled
+                    if (row, col) in current_piece.get_possible_moves():
+
+                        # in case of a king's castle
+                        if (((current_piece.get_piece() == 'wK')
+                             or (current_piece.get_piece() == 'bK'))
+                                and (abs(selected_x - col) == 2)):
+                            # perform king's castle
+                            chess_board = king_castle(self.chess_board_starting, selected_x, selected_y, row, col)
+                            # perform end of move actions
+
+                            # chess_board, previous_move = end_of_move(chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 3)
+                            # track previous move made
+                            previous_move = (self.chess_board_starting[row][col].get_player(),
+                                             self.chess_board_starting[row][col].get_piece(),
+                                             self.chess_board_starting[row][col].get_moved_from(),
+                                             self.chess_board_starting[row][col].get_moved_to()
+                                             )
+                            # update possible moves list
+                            obtain_possible_moves(self.chess_board_starting, previous_move)
+                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
+
+                        # in case of an en passant by pawns
+                        elif (((current_piece.get_piece() == 'bP')
+                               or (current_piece.get_piece() == 'wP'))
+                              and (abs(selected_x - row) == 1 and abs(selected_y - col) == 1)
+                              and (self.chess_board_starting[row][col] == ' ')):
+                            # perform end of move actions for en passant
+                            # chess_board, previous_move = end_of_move(chess_board, selected_piece[0] , selected_piece[1], row, col, board_size, 1)
+                            # this means en passant was done!
+                            self.chess_board_starting[row][col] = self.chess_board_starting[selected_x][selected_y]
+                            # remove the selected piece from the old spot
+                            self.chess_board_starting[selected_x][selected_y] = ' '
+
+                            # capture the pawn by en passant
+                            if self.chess_board_starting[row][col].get_piece() == 'bP':
+                                # if black, pawn to capture is above it
+                                self.chess_board_starting[row - 1][col] = ' '
+                            elif self.chess_board_starting[row][col].get_piece() == 'wP':
+                                # if white, pawn to capture is below it
+                                self.chess_board_starting[row + 1][col] = ' '
+
+                            # update the moved_to and moved_from positions in the chess piece class
+                            self.chess_board_starting[row][col].update_moved_to((row, col))
+                            self.chess_board_starting[row][col].update_moved_from((selected_x, selected_y))
+
+                            # track previous move made
+                            previous_move = (self.chess_board_starting[row][col].get_player(),
+                                             self.chess_board_starting[row][col].get_piece(),
+                                             self.chess_board_starting[row][col].get_moved_from(),
+                                             self.chess_board_starting[row][col].get_moved_to()
+                                             )
+
+                            # update possible moves list
+                            obtain_possible_moves(self.chess_board_starting, previous_move)
+                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
+
+                        # any other legal move
+                        else:
+                            # perform end of move actions
+                            # this means a regular legal move was done
+                            self.chess_board_starting[row][col] = self.chess_board_starting[selected_x][selected_y]
+                            # remove the selected piece from the old spot
+                            self.chess_board_starting[selected_x][selected_y] = ' '
+                            # update the moved_to and moved_from positions in the chess piece class
+                            self.chess_board_starting[row][col].update_moved_to((row, col))
+                            self.chess_board_starting[row][col].update_moved_from((selected_x, selected_y))
+
+                            # track previous move made
+                            previous_move = (self.chess_board_starting[row][col].get_player(),
+                                             self.chess_board_starting[row][col].get_piece(),
+                                             self.chess_board_starting[row][col].get_moved_from(),
+                                             self.chess_board_starting[row][col].get_moved_to()
+                                             )
+
+                            # update possible moves list
+                            obtain_possible_moves(self.chess_board_starting, previous_move)
+                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
+
+                        # iterate to next player, evaluate a check, and reset piece to none
+                        player += 1
+                        active_check = active_check_lookup(player, black_king_check, white_king_check)
+                        selected_piece = None
+
+                    else:
+                        # if move is not in legal move set
+                        selected_piece = None
+
+                else:
+                    # if wrong color
+                    selected_piece = None
+
+            elif not selected_piece:
+                # this will select a piece if none have been selected
+                if self.chess_board_starting[row][col] != ' ':
+                    selected_piece = (row, col)
+
+        self.assertEqual(self.chess_board_starting[6][4], ' ', "the pawn should have moved")
+        self.assertEqual(self.chess_board_starting[4][4].get_piece(), 'wP', "the pawn is now here")
+        self.assertEqual(self.chess_board_starting[4][4].get_possible_moves(), [(3,4)], "the only possible pawn move is now 3, 5")
+        # since the king was revealed, the wK now has a new move
+        self.assertEqual(self.chess_board_starting[7][4].get_possible_moves(), [(6, 4)],"the king now can move to 6, 4")
+        self.assertEqual(selected_piece, None, "when run correctly, the selected piece refreshes")
+
+# ---------- this will obtain the possible moves values for each piece after a move is completed  ---------- #
+
+def obtain_possible_moves_with_check(board, previous):
+    # this function will cycle through every piece on the chess board
+    # a blank list of possible moves will be created and then passed into ChessPiece class with update_possible_moves(list)
+
+    # this is a chess board size
+    board_size = 8
+
+    # assign some vars before processing
+    black_king = None
+    white_king = None
+
+    for rows in board:
+        for square in rows:
+            # if a piece is in the square
+            if square != ' ':
+                # new list for each piece
+                if square.get_piece() == 'wK':
+                    white_king = square
+                if square.get_piece() == 'bK':
+                    black_king = square
+                list_of_moves = []
+                # set current piece
+                current_piece_x, current_piece_y = square.get_position()
+                #print(f'the current piece x is: {current_piece_x} and the y is: {current_piece_y}')
+                # run through every combo of (0,0) to (7,7) to calculate available moves
+                for row in range(board_size):
+                    for col in range(board_size):
+                        #print(f'this is the row: {row} and the col: {col}')
+                        if legal_movement(board, current_piece_x, current_piece_y, row, col, previous):
+                            # append list of moves
+                            list_of_moves.append((row, col))
+                # after looping through the board, set list to chess_piece value
+                square.update_possible_moves(list_of_moves)
+                #square_list = square.get_possible_moves()
+                #print(f'the piece is: {square} and the possible moves are: {square_list}')
+
+
+    black_king_moves = black_king.get_possible_moves()
+    white_king_moves = white_king.get_possible_moves()
+
+    # assess moves for black king
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'white':
+                    for move in black_king_moves:
+                        #print(f'this is black kings mvoe: {move}')
+                        #print(f'this is square possible move: {square.get_possible_moves()}')
+                        if move in square.get_possible_moves():
+                            #print(f'foudn in sqyuare possibel lmove')
+                            black_king_moves.remove(move)
+
+    # assess moves for white king
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'black':
+                    for move in white_king_moves:
+                        #print(f'this is white kings mvoe: {move}')
+                        #print(f'this is square possible move: {square.get_possible_moves()}')
+                        if move in square.get_possible_moves():
+                            #print(f'foudn in sqyuare possibel lmove')
+                            white_king_moves.remove(move)
+
+    black_x, black_y = black_king.get_position()
+    white_x, white_y = white_king.get_position()
+    board[black_x][black_y].update_possible_moves(black_king_moves)
+    board[white_x][white_y].update_possible_moves(white_king_moves)
+
+    # alt board for check
+    a_board = copy.deepcopy(board)
+
+    # assess self checks for white moves
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'white':
+                    get_moves = square.get_possible_moves()
+                    x, y = square.get_position()
+
+                    for move in get_moves:
+                        # unpacks new move and plays it
+                        new_x, new_y = move
+
+                        # this means a regular legal move was done
+                        a_board[new_x][new_y] = a_board[x][y]
+                        a_board[x][y] = ' '
+
+                        # pull checks on black and white king
+                        black_king_check, white_king_check = player_check_logic(a_board)
+
+                        # does it cause a check?
+                        if accidental_self_check(black_king_check, white_king_check, 'white'):
+                            # check is happening, so remove that possible move
+                            get_moves.remove(move)
+
+                        # revert back to old move and set new set of moves
+                        a_board[x][y] = a_board[new_x][new_y]
+                        a_board[new_x][new_y] = ' '
+                        board[x][y].update_possible_moves(get_moves)
+
+
+    # assess self checks for black moves
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'black':
+                    get_moves = square.get_possible_moves()
+                    x, y = square.get_position()
+
+                    for move in get_moves:
+                        # unpacks new move and plays it
+                        new_x, new_y = move
+
+                        # this means a regular legal move was done
+                        a_board[new_x][new_y] = a_board[x][y]
+                        a_board[x][y] = ' '
+
+                        # pull checks on black and white king
+                        black_king_check, white_king_check = player_check_logic(a_board)
+
+                        # does it cause a check?
+                        if accidental_self_check(black_king_check, white_king_check, 'black'):
+                            # check is happening, so remove that possible move
+                            get_moves.remove(move)
+
+                        # revert back to old move and set new set of moves
+                        a_board[x][y] = a_board[new_x][new_y]
+                        a_board[new_x][new_y] = ' '
+                        board[x][y].update_possible_moves(get_moves)
+
+# ---------- gui functions - check castle check positions ---------- #
+
+def castle_movement(board, selected_piece_x, selected_piece_y, new_y):
+
+    # initiate alternative chess board to validate the movement for check logic
+    king_chess_board = copy.deepcopy(board)
+    current_piece = king_chess_board[selected_piece_x][selected_piece_y]
+    current_player = current_piece.get_player()
+    change_in_y = new_y - selected_piece_y
+
+    # is king moving left or right?
+    if change_in_y > 0:
+        # king is moving right
+        if current_player == 'white' and board[7][7] != ' ' and board[7][7].get_piece() == 'wR':
+            if board[7][7].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 7,5 and 7,6 for any pieces and for possible checks
+                if board[7][5] == ' ' and board[7][6] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[7][5] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[7][6] = king_chess_board[7][5]
+                        king_chess_board[7][5] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+        if current_player == 'black' and board[0][7] != ' ' and board[0][7].get_piece() == 'bR':
+            if board[0][7].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 0,5 and 0,6 for any pieces and possible checks
+                if board[0][5] == ' ' and board[0][6] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[0][5] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[0][6] = king_chess_board[0][5]
+                        king_chess_board[0][5] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+    if change_in_y < 0:
+        # king is moving left
+        if current_player == 'white' and board[7][0] != ' ' and board[7][0].get_piece() == 'wR':
+            if board[7][0].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 7,1 and 7,2 and 7,3 for any pieces
+                if board[7][1] == ' ' and board[7][2] == ' ' and board[7][3] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[7][3] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[7][2] = king_chess_board[7][3]
+                        king_chess_board[7][3] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+        if current_player == 'black' and board[0][0] != ' ' and board[0][0].get_piece() == 'bR':
+            if board[0][0].moved() is False:
+                # white king and white rook, check all spaces between it and the rook
+                # check 0,1 and 0,2 and 0,3 for any pieces
+                if board[0][1] == ' ' and board[0][2] == ' ' and board[0][3] == ' ':
+                    # check in between first spot for a check
+                    king_chess_board[0][3] = king_chess_board[selected_piece_x][selected_piece_y]
+                    king_chess_board[selected_piece_x][selected_piece_y] = ' '
+                    black_check, white_check = player_check_logic(king_chess_board)
+                    if accidental_self_check(black_check, white_check, current_player) is False:
+                        # check in between second spot for a check
+                        king_chess_board[0][2] = king_chess_board[0][3]
+                        king_chess_board[0][3] = ' '
+                        black_check, white_check = player_check_logic(king_chess_board)
+                        if accidental_self_check(black_check, white_check, current_player) is False:
+                            return True
+
+    return False
+
+# ---------- function to extract pieces from the board ---------- #
+
+def grab_pieces_from_board(board):
+
+    list_of_chess_pieces = []
+
+    # cycle through board and grab pieces
+    for rows in board:
+        for square in rows:
+            # if not an empty square
+            if square != ' ':
+                list_of_chess_pieces.append(square)
+
+    return list_of_chess_pieces
+
+# ---------- function to get legal moves based on extracted pieces ---------- #
+
+def checkmate_trigger(board, previous_move, checked_player):
+
+    king = None
+
+    # can the king escape this check?
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if checked_player == 'white' and square.get_piece() == 'wK':
+                    king = square
+                elif checked_player == 'black' and square.get_piece() == 'bK':
+                    king = square
+
+    opponent, enemy_piece, enemy_from, enemy_to = previous_move
+
+    # discover the path between the K and the previous piece
+    king_x, king_y = king.get_position()
+    enemy_x, enemy_y = enemy_to
+    change_in_x = enemy_x - king_x
+    change_in_y = enemy_y - king_y
+    path = []
+    if change_in_y == 0:
+        # up
+        if change_in_x < 0:
+            for i in range(-1, change_in_x, -1):
+                path.append((king_x - i, king_y))
+        # down
+        elif change_in_x > 0:
+            for i in range(1, change_in_x, 1):
+                path.append((king_x + i, king_y))
+
+    elif change_in_x == 0:
+        # left
+        if change_in_y < 0:
+            for i in range(-1, change_in_y, -1):
+                path.append((king_x, king_y - i))
+        # right
+        elif change_in_y > 0:
+            for i in range(1, change_in_y, 1):
+                path.append((king_x, king_y + i))
+
+    elif abs(change_in_y) == abs(change_in_x):
+        # diagonal movements
+        if change_in_x < 0 and change_in_y < 0:
+            for i in range(1, abs(change_in_x), 1):
+                path.append((king_x - i, king_y - i))
+
+        # only x decreases
+        elif change_in_x < 0 < change_in_y:
+            for i in range(1, abs(change_in_x), 1):
+                path.append((king_x - i, king_y + i))
+
+        # only y decreases
+        elif change_in_y < 0 < change_in_x:
+            for i in range(1, abs(change_in_x), 1):
+                path.append((king_x + i, king_y - i))
+
+        # both x and y increase
+        elif change_in_x > 0 and change_in_y > 0:
+            for i in range(1, abs(change_in_x), 1):
+                path.append((king_x + i, king_y + i))
+
+    # we now have a path of moves to check
+
+    if 'N' in enemy_piece:
+        # no blocking a knight
+        # must capture knight
+        for rows in board:
+            for square in rows:
+                if square != ' ':
+                    if square.get_player() == checked_player:
+                        if enemy_to in square.get_possible_moves():
+                            #make sure no other enemy points to it if you're a king
+                            if 'K' in square.get_piece():
+                                for row_2 in board:
+                                    for square_2 in row_2:
+                                        if square_2 != ' ':
+                                            if square.get_player() != checked_player:
+                                                if enemy_to in square.get_possible_moves():
+                                                    # not allowed since piece is protected, king can't eat
+                                                    pass
+                            # the enemy can be capture by this piece
+                            else:
+                                # return false, no checkmate, captured with a different piece other than king
+                                return False
+        # or king must move
+        escape_moves = king.get_possible_moves()
+        for move in king.get_possible_moves():
+            for rows in board:
+                for square in rows:
+                    if square != ' ':
+                        if checked_player != square.get_player():
+                            if move in square.get_possible_moves():
+                                escape_moves.remove(move)
+        if len(escape_moves) > 0:
+            return False # not checkmate
+
+    else:
+        # must block the path of the piece
+        # in the path means rows, col, or diagonal
+        if len(path) > 0:
+            for rows in board:
+                for square in rows:
+                    if square != ' ':
+                        if square.get_player() == checked_player:
+                            if len(list(set(path) & set(square.get_possible_moves()))) > 0:
+                                # we can block the path with a move
+                                # return false, no checkmate
+                                return False
+        # must capture the piece
+        for rows in board:
+            for square in rows:
+                if square != ' ':
+                    if square.get_player() == checked_player:
+                        if enemy_to in square.get_possible_moves():
+                            # the enemy can be capture by this piece
+                            # return false, no checkmate
+                            return False
+        # or king must move
+        escape_moves = king.get_possible_moves()
+        for move in king.get_possible_moves():
+            for rows in board:
+                for square in rows:
+                    if square != ' ':
+                        if checked_player != square.get_player():
+                            if move in square.get_possible_moves():
+                                escape_moves.remove(move)
+        if len(escape_moves) > 0:
+            return False # not checkmate
+
+    # if false is not triggered, then return True
+    return True

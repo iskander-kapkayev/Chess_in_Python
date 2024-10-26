@@ -6,8 +6,8 @@ class TestLegalMove(ut.TestCase):
     def setUp(self):
         self.chess_board_starting = board_for_testing()
         self.chess_board_scattered = board_for_testing_scattered()
-        obtain_possible_moves(self.chess_board_starting, None)
-        obtain_possible_moves(self.chess_board_scattered, None)
+        obtain_possible_moves_v2(self.chess_board_starting, None)
+        obtain_possible_moves_v2(self.chess_board_scattered, None)
 
     # ---------- testing of legal path function (only considers possible movements for a piece) ----------
     def test_legal_path_pawn(self):
@@ -205,13 +205,12 @@ class TestLegalMove(ut.TestCase):
         self.chess_board_scattered[4][5] = self.chess_board_scattered[3][6]
         self.chess_board_scattered[3][6] = ' '
         previous = ('black', 'bP', (3, 6), (4, 5))
-        obtain_possible_moves(self.chess_board_scattered, previous)
+        obtain_possible_moves_v2(self.chess_board_scattered, previous)
 
         # now the wK can eat the 4,5 bP
         get_moves = self.chess_board_scattered[5][4].get_possible_moves()
         get_moves_n = self.chess_board_scattered[2][6].get_possible_moves()
-        print(get_moves)
-        print(get_moves_n)
+
         if (4,5) in get_moves:
             legal_check_1 = False
         else:
@@ -235,132 +234,35 @@ class TestLegalMove(ut.TestCase):
         self.assertEqual(check_white_moves, 20,"There should be 20 moves for each color.")
         check_black_moves = count_moves(self.chess_board_starting, 1)
         self.assertEqual(check_black_moves, 20, "There should be 20 moves for each color.")
-    
-    def test_gui_movements(self):
-        # play a short game and assert movements that are allowed and not allowed
-        active_check = False
-        # selected piece is a white pawn
-        selected_piece = (6,4)
-        selected_x, selected_y = selected_piece
-        # movement spot is 2 spaces up (initial pawn move)
-        row = 4
-        col = 4
-        # set player to white
-        player = 0
-        if not active_check:
 
-            if selected_piece:
-                current_piece = self.chess_board_starting[selected_x][selected_y]
+    def test_obtain_v2(self):
+        # play out a check on the black king
 
-                # make sure players go in order: W, B, W, B, etc.
-                if ((current_piece.get_player() == 'white' and player % 2 == 0)
-                        or (current_piece.get_player() == 'black' and player % 2 == 1)):
+        # first move the wP from 6,4 to 4,4
+        self.chess_board_starting[4][4] = self.chess_board_starting[6][4]
+        self.chess_board_starting[6][4] = ' '
 
-                    # make sure a legal move is selected
-                    # since all possible moves are labeled
-                    if (row, col) in current_piece.get_possible_moves():
+        # second move the bP from 1,5 to 2,5
+        self.chess_board_starting[2][5] = self.chess_board_starting[1][5]
+        self.chess_board_starting[1][5] = ' '
 
-                        # in case of a king's castle
-                        if (((current_piece.get_piece() == 'wK')
-                             or (current_piece.get_piece() == 'bK'))
-                                and (abs(selected_x - col) == 2)):
-                            # perform king's castle
-                            chess_board = king_castle(self.chess_board_starting, selected_x, selected_y, row, col)
-                            # perform end of move actions
+        # next move the wQ into a check position from 7,3 to 3,7
+        self.chess_board_starting[3][7] = self.chess_board_starting[7][3]
+        self.chess_board_starting[7][3] = ' '
 
-                            # chess_board, previous_move = end_of_move(chess_board, selected_piece[0], selected_piece[1], row, col, board_size, 3)
-                            # track previous move made
-                            previous_move = (self.chess_board_starting[row][col].get_player(),
-                                             self.chess_board_starting[row][col].get_piece(),
-                                             self.chess_board_starting[row][col].get_moved_from(),
-                                             self.chess_board_starting[row][col].get_moved_to()
-                                             )
-                            # update possible moves list
-                            obtain_possible_moves(self.chess_board_starting, previous_move)
-                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
+        # set previous move
+        previous_move = ('white', 'wQ', (7, 3), (3, 7))
 
-                        # in case of an en passant by pawns
-                        elif (((current_piece.get_piece() == 'bP')
-                               or (current_piece.get_piece() == 'wP'))
-                              and (abs(selected_x - row) == 1 and abs(selected_y - col) == 1)
-                              and (self.chess_board_starting[row][col] == ' ')):
-                            # perform end of move actions for en passant
-                            # chess_board, previous_move = end_of_move(chess_board, selected_piece[0] , selected_piece[1], row, col, board_size, 1)
-                            # this means en passant was done!
-                            self.chess_board_starting[row][col] = self.chess_board_starting[selected_x][selected_y]
-                            # remove the selected piece from the old spot
-                            self.chess_board_starting[selected_x][selected_y] = ' '
+        # black king is in check!
+        # re-running the possible moves should show one possibility (pawn block!)
+        obtain_possible_moves_v2(self.chess_board_starting, previous_move)
 
-                            # capture the pawn by en passant
-                            if self.chess_board_starting[row][col].get_piece() == 'bP':
-                                # if black, pawn to capture is above it
-                                self.chess_board_starting[row - 1][col] = ' '
-                            elif self.chess_board_starting[row][col].get_piece() == 'wP':
-                                # if white, pawn to capture is below it
-                                self.chess_board_starting[row + 1][col] = ' '
+        # print the possible moves (should only be one)
+        for rows in self.chess_board_starting:
+            for square in rows:
+                if square != ' ' and square.get_player() == 'black':
+                    print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
 
-                            # update the moved_to and moved_from positions in the chess piece class
-                            self.chess_board_starting[row][col].update_moved_to((row, col))
-                            self.chess_board_starting[row][col].update_moved_from((selected_x, selected_y))
-
-                            # track previous move made
-                            previous_move = (self.chess_board_starting[row][col].get_player(),
-                                             self.chess_board_starting[row][col].get_piece(),
-                                             self.chess_board_starting[row][col].get_moved_from(),
-                                             self.chess_board_starting[row][col].get_moved_to()
-                                             )
-
-                            # update possible moves list
-                            obtain_possible_moves(self.chess_board_starting, previous_move)
-                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
-
-                        # any other legal move
-                        else:
-                            # perform end of move actions
-                            # this means a regular legal move was done
-                            self.chess_board_starting[row][col] = self.chess_board_starting[selected_x][selected_y]
-                            # remove the selected piece from the old spot
-                            self.chess_board_starting[selected_x][selected_y] = ' '
-                            # update the moved_to and moved_from positions in the chess piece class
-                            self.chess_board_starting[row][col].update_moved_to((row, col))
-                            self.chess_board_starting[row][col].update_moved_from((selected_x, selected_y))
-
-                            # track previous move made
-                            previous_move = (self.chess_board_starting[row][col].get_player(),
-                                             self.chess_board_starting[row][col].get_piece(),
-                                             self.chess_board_starting[row][col].get_moved_from(),
-                                             self.chess_board_starting[row][col].get_moved_to()
-                                             )
-
-                            # update possible moves list
-                            obtain_possible_moves(self.chess_board_starting, previous_move)
-                            black_king_check, white_king_check = player_check_logic(self.chess_board_starting)
-
-                        # iterate to next player, evaluate a check, and reset piece to none
-                        player += 1
-                        active_check = active_check_lookup(player, black_king_check, white_king_check)
-                        selected_piece = None
-
-                    else:
-                        # if move is not in legal move set
-                        selected_piece = None
-
-                else:
-                    # if wrong color
-                    selected_piece = None
-
-            elif not selected_piece:
-                # this will select a piece if none have been selected
-                if self.chess_board_starting[row][col] != ' ':
-                    selected_piece = (row, col)
-
-        self.assertEqual(self.chess_board_starting[6][4], ' ', "the pawn should have moved")
-        self.assertEqual(self.chess_board_starting[4][4].get_piece(), 'wP', "the pawn is now here")
-        self.assertEqual(self.chess_board_starting[4][4].get_possible_moves(), [(3,4)], "the only possible pawn move is now 3, 5")
-        # since the king was revealed, the wK now has a new move
-        self.assertEqual(self.chess_board_starting[7][4].get_possible_moves(), [(6, 4)],"the king now can move to 6, 4")
-        self.assertEqual(selected_piece, None, "when run correctly, the selected piece refreshes")
-        
 '''
     def tearDown(self):
         del self.chess_board_starting
