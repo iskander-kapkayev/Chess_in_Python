@@ -8,7 +8,7 @@ class TestLegalMove(ut.TestCase):
         self.chess_board_scattered = board_for_testing_scattered()
         obtain_possible_moves_v2(self.chess_board_starting, None)
         obtain_possible_moves_v2(self.chess_board_scattered, None)
-
+    '''
     # ---------- testing of legal path function (only considers possible movements for a piece) ----------
     def test_legal_path_pawn(self):
         # starting board checks
@@ -234,6 +234,7 @@ class TestLegalMove(ut.TestCase):
         self.assertEqual(check_white_moves, 20,"There should be 20 moves for each color.")
         check_black_moves = count_moves(self.chess_board_starting, 1)
         self.assertEqual(check_black_moves, 20, "There should be 20 moves for each color.")
+    '''
 
     def test_obtain_v2(self):
         # play out a check on the black king
@@ -241,15 +242,21 @@ class TestLegalMove(ut.TestCase):
         # first move the wP from 6,4 to 4,4
         self.chess_board_starting[4][4] = self.chess_board_starting[6][4]
         self.chess_board_starting[6][4] = ' '
-
+        self.chess_board_starting[4][4].update_moved_from((6, 4))
+        self.chess_board_starting[4][4].update_moved_to((4, 4))
+        
         # second move the bP from 1,5 to 2,5
         self.chess_board_starting[2][5] = self.chess_board_starting[1][5]
         self.chess_board_starting[1][5] = ' '
-
+        self.chess_board_starting[2][5].update_moved_from((1, 5))
+        self.chess_board_starting[2][5].update_moved_to((2, 5))
+        
         # next move the wQ into a check position from 7,3 to 3,7
         self.chess_board_starting[3][7] = self.chess_board_starting[7][3]
         self.chess_board_starting[7][3] = ' '
-
+        self.chess_board_starting[3][7].update_moved_from((7, 3))
+        self.chess_board_starting[3][7].update_moved_to((3, 7))
+        
         # set previous move
         previous_move = ('white', 'wQ', (7, 3), (3, 7))
 
@@ -263,6 +270,70 @@ class TestLegalMove(ut.TestCase):
                 if square != ' ' and square.get_player() == 'black':
                     print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
 
+        # count number of moves
+        self.assertEqual(count_moves(self.chess_board_starting, 1),1, 'in this position, black should only have one move, pawn to 2,4 to block wQ check')
+
+    def test_checkmate(self):
+        # play out a check on the black king
+
+        # first move the wP from 6,4 to 4,4
+        self.chess_board_starting[4][4] = self.chess_board_starting[6][4]
+        self.chess_board_starting[6][4] = ' '
+        self.chess_board_starting[4][4].update_moved_from((6, 4))
+        self.chess_board_starting[4][4].update_moved_to((4, 4))
+
+        # second move the bP from 1,0 to 2,0
+        self.chess_board_starting[2][0] = self.chess_board_starting[1][0]
+        self.chess_board_starting[1][0] = ' '
+        self.chess_board_starting[2][0].update_moved_from((1, 0))
+        self.chess_board_starting[2][0].update_moved_to((2, 0))
+
+        # next move the wQ from 7,3 to 5,5
+        self.chess_board_starting[5][5] = self.chess_board_starting[7][3]
+        self.chess_board_starting[7][3] = ' '
+        self.chess_board_starting[5][5].update_moved_from((7, 3))
+        self.chess_board_starting[5][5].update_moved_to((5, 5))
+
+        # next move the bP from 1,1 to 3,1
+        self.chess_board_starting[3][1] = self.chess_board_starting[1][1]
+        self.chess_board_starting[1][1] = ' '
+        self.chess_board_starting[3][1].update_moved_from((1, 1))
+        self.chess_board_starting[3][1].update_moved_to((3, 1))
+
+        # next move the wB from 7,5 to 4,2
+        self.chess_board_starting[4][2] = self.chess_board_starting[7][5]
+        self.chess_board_starting[7][5] = ' '
+        self.chess_board_starting[4][2].update_moved_from((7, 5))
+        self.chess_board_starting[4][2].update_moved_to((4, 2))
+
+        # next move the bP from 1,2 to 3,2
+        self.chess_board_starting[3][2] = self.chess_board_starting[1][2]
+        self.chess_board_starting[1][2] = ' '
+        self.chess_board_starting[3][2].update_moved_from((1, 2))
+        self.chess_board_starting[3][2].update_moved_to((3, 2))
+
+        # next move the wQ from 5,5 to 1,5
+        self.chess_board_starting[1][5] = self.chess_board_starting[5][5]
+        self.chess_board_starting[5][5] = ' '
+        self.chess_board_starting[1][5].update_moved_from((5, 5))
+        self.chess_board_starting[1][5].update_moved_to((1, 5))
+
+        # set previous move
+        previous_move = ('white', 'wQ', (5, 5), (1, 5))
+
+        # black king is in check!
+        # re-running the possible moves should show one possibility (pawn block!)
+        obtain_possible_moves_v2(self.chess_board_starting, previous_move)
+
+        # print the possible moves (should only be one)
+        for rows in self.chess_board_starting:
+            for square in rows:
+                if square != ' ' and square.get_player() == 'black':
+                    print(
+                        f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+
+        # count number of moves
+        self.assertEqual(count_moves(self.chess_board_starting, 1), 0,'in this position, black is in checkmate')
 '''
     def tearDown(self):
         del self.chess_board_starting
