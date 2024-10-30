@@ -1427,3 +1427,88 @@ def three_king_escape(board, checked_player, check_pieces):
                     board[square_x][square_y].possible_moves.remove((checked_x,checked_y))
 
     return escape_plan
+
+# ---------- gui function - end of moves - castle ---------- #
+
+def end_castle(chess_board, select_x, select_y, row, col, current_player):
+
+    # set check everything chessboard
+    a_chess_board = copy.deepcopy(chess_board)
+
+    if castle_movement_v2(chess_board, select_x, select_y, row, col):
+
+        # perform king's castle, obtain new possible moves, obtain check values
+        king_castle(a_chess_board, select_x, select_y, row, col)
+        previous_move = retain_prev_move(a_chess_board, row, col)
+        obtain_possible_moves_v2(a_chess_board, previous_move)
+        black_king_check, white_king_check = player_check_logic(a_chess_board)
+
+        if accidental_self_check(black_king_check, white_king_check, current_player) is False:
+
+            # perform on actual board!
+            king_castle(chess_board, select_x, select_y, row, col)
+
+            # track previous move made
+            previous_move = retain_prev_move(chess_board, row, col)
+
+            # update possible moves list because change has occurred
+            obtain_possible_moves_v2(chess_board, previous_move)
+
+            return True
+
+    return False
+
+
+# ---------- gui function - end of moves - castle ---------- #
+
+def end_en_passant(chess_board, select_x, select_y, row, col, current_player):
+    # set check everything chessboard
+    a_chess_board = copy.deepcopy(chess_board)
+
+    # perform king's castle, obtain new possible moves, obtain check values
+    en_passant(a_chess_board, select_x, select_y, row, col)
+    previous_move = retain_prev_move(a_chess_board, row, col)
+    obtain_possible_moves_v2(a_chess_board, previous_move)
+    black_king_check, white_king_check = player_check_logic(a_chess_board)
+
+    if accidental_self_check(black_king_check, white_king_check, current_player) is False:
+
+        # perform on actual board!
+        en_passant(chess_board, select_x, select_y, row, col)
+
+        # track previous move made
+        previous_move = retain_prev_move(chess_board, row, col)
+
+        # update possible moves list because change has occurred
+        obtain_possible_moves_v2(chess_board, previous_move)
+
+        return True
+
+    return False
+
+# ---------- gui function - end of moves - castle ---------- #
+
+def end_any_move(chess_board, select_x, select_y, row, col, current_player):
+    # set check everything chessboard
+    a_chess_board = copy.deepcopy(chess_board)
+
+    # perform king's castle, obtain new possible moves, obtain check values
+    any_legal_move(a_chess_board, select_x, select_y, row, col)
+    previous_move = retain_prev_move(a_chess_board, row, col)
+    obtain_possible_moves_v2(a_chess_board, previous_move)
+    black_king_check, white_king_check = player_check_logic(a_chess_board)
+
+    if accidental_self_check(black_king_check, white_king_check, current_player) is False:
+
+        # perform on actual board!
+        any_legal_move(chess_board, select_x, select_y, row, col)
+
+        # track previous move made
+        previous_move = retain_prev_move(chess_board, row, col)
+
+        # update possible moves list because change has occurred
+        obtain_possible_moves_v2(chess_board, previous_move)
+
+        return True
+
+    return False
