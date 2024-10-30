@@ -233,9 +233,6 @@ while running:
 
                         print(f' the piece selected is: {selected_piece}')
 
-                        # set check everything chessboard
-                        a_chess_board = copy.deepcopy(chess_board)
-
                         # set current piece for ease
                         current_piece = chess_board[selected_piece[0]][selected_piece[1]]
 
@@ -251,7 +248,7 @@ while running:
                             if (row, col) in current_piece.get_possible_moves():
 
                                 # in case of a king's castle
-                                if ((current_piece.get_piece() == 'wK') or (current_piece.get_piece() == 'bK')
+                                if (((current_piece.get_piece() == 'wK') or (current_piece.get_piece() == 'bK'))
                                         and (abs(selected_piece[1] - col) == 2)):
 
                                     # double check king movement logic to not pass through a check
@@ -265,7 +262,7 @@ while running:
                                         player += 1
 
                                         # update checks for black/white
-                                        black_king_check, white_king_check = player_check_logic(a_chess_board)
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
 
                                         # update active_check, should return true if the new iterated player is in check
                                         active_check = active_check_lookup(player, black_king_check, white_king_check)
@@ -278,7 +275,7 @@ while running:
 
                                     else:
                                         # not legal castle
-                                        messagebox.showinfo('Illegal Castle', f'Does not remove you from check!')
+                                        messagebox.showinfo('Illegal Move', f'Does not remove you from check!')
                                         selected_piece = None
 
                                 # in case of an en passant by pawns
@@ -298,7 +295,7 @@ while running:
                                         player += 1
 
                                         # update checks for black/white
-                                        black_king_check, white_king_check = player_check_logic(a_chess_board)
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
 
                                         # update active_check, should return true if the new iterated player is in check
                                         active_check = active_check_lookup(player, black_king_check, white_king_check)
@@ -326,7 +323,7 @@ while running:
                                         player += 1
 
                                         # update checks for black/white
-                                        black_king_check, white_king_check = player_check_logic(a_chess_board)
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
 
                                         # update active_check, should return true if the new iterated player is in check
                                         active_check = active_check_lookup(player, black_king_check, white_king_check)
