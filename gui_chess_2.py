@@ -120,6 +120,7 @@ while running:
 
                                     # track previous move made
                                     previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                     # iterate to next player
                                     player += 1
@@ -143,7 +144,7 @@ while running:
 
                             # in case of an en passant by pawns
                             elif ((current_piece.get_piece() == 'bP') or (current_piece.get_piece() == 'wP')
-                                  and (abs(selected_piece[0] - row) == 1 and abs(selected_piece[1] - col) == 1)
+                                  and (abs(prev_moved_from[0] - prev_moved_from[1]) == 2)
                                   and (chess_board[row][col] == ' ')):
 
                                 # perform en passant, obtain new possible moves, obtain check values
@@ -151,6 +152,7 @@ while running:
 
                                     # track previous move made
                                     previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                     # iterate to next player
                                     player += 1
@@ -179,6 +181,7 @@ while running:
 
                                     # track previous move made
                                     previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                     # iterate to next player
                                     player += 1
@@ -217,21 +220,18 @@ while running:
 
             # now the game enters check phase
             # player being checked must make a move to remove check
-            print(f'\n this is active check: {active_check}')
             if active_check:
 
                 print(f'\n----------\n')
 
                 # double check every possible move and see if there are moves available
 
-                print(f'teh number of moves available: {count_moves(chess_board, player)}')
+                print(f'the number of moves available: {count_moves(chess_board, player)}')
 
                 if count_moves(chess_board, player) > 0:
 
                     # when piece is selected
                     if selected_piece:
-
-                        print(f' the piece selected is: {selected_piece}')
 
                         # set current piece for ease
                         current_piece = chess_board[selected_piece[0]][selected_piece[1]]
@@ -244,7 +244,6 @@ while running:
                                 or (current_player == 'black' and player % 2 == 1)):
 
                             # make sure a legal move is selected from possible moves list
-                            print(f' this piece can move: {current_piece.get_possible_moves()}')
                             if (row, col) in current_piece.get_possible_moves():
 
                                 # in case of a king's castle
@@ -257,6 +256,7 @@ while running:
 
                                         # track previous move made
                                         previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                         # iterate to next player
                                         player += 1
@@ -290,6 +290,7 @@ while running:
 
                                         # track previous move made
                                         previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                         # iterate to next player
                                         player += 1
@@ -318,6 +319,7 @@ while running:
 
                                         # track previous move made
                                         previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
                                         # iterate to next player
                                         player += 1

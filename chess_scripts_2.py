@@ -150,25 +150,8 @@ def legal_movement(board, selected_piece_x, selected_piece_y, new_x, new_y, prev
 
         # --------------- Pawn movements! --------------- #
         if current_piece.get_piece() == 'wP' or current_piece.get_piece() == 'bP':
-            # if the pawn moves 2 spaces
-            if abs(selected_piece_x - new_x) == 2:
-                # make sure nothing exists between new_x
-                if current_piece.get_piece() == 'wP':
-                    # if white pawn, check space above it
-                    if board[selected_piece_x - 1][selected_piece_y] == ' ':
-                        return True
-                elif current_piece.get_piece() == 'bP':
-                    #  if black pawn, check space below it
-                    if board[selected_piece_x + 1][selected_piece_y] == ' ':
-                        return True
-            # else if the pawn moves one space (not a capture, capture is already legalized in legal_path function)
-            elif abs(selected_piece_x - new_x) + abs(selected_piece_y - new_y) == 1:
-                # make sure that space is available
-                if enemy_piece == ' ':
-                    return True
-            # else if capturing a piece, this was approved in legal path so we can move on
-            elif abs(selected_piece_x - new_x) + abs(selected_piece_y - new_y) == 2:
-                return True
+            # pawn moves legalized in legal path
+            return True
 
         # --------------- Rook movements! --------------- #
         # check all spaces between rooks current spot and next spot
@@ -426,12 +409,15 @@ def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous
                 if selected_piece_x == 6:
                     # pawn can move one OR two squares if no piece is on that square
                     if enemy_piece == ' ':
-                        if selected_piece_x - new_x == 1 or selected_piece_x - new_x == 2:
+                        if change_in_x == -2:
+                            if board[selected_piece_x - 1][selected_piece_y] == ' ':
+                                return True
+                        if change_in_x == -1:
                             return True
                 else:
                     # pawn can move one square
                     if enemy_piece == ' ':
-                        if selected_piece_x - new_x == 1:
+                        if change_in_x == -1:
                             return True
             elif selected_piece_y != new_y:
                 # attempt en passant
@@ -454,9 +440,9 @@ def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous
                 elif enemy_piece != ' ':
                     if enemy_piece.get_player() != current_piece.get_player():
                         # if the new position of the pawn is 1 row away
-                        if selected_piece_x - new_x == 1:
+                        if change_in_x == -1:
                             # if the position of the pawn will be +-1 col
-                            if abs(selected_piece_y - new_y) == 1:
+                            if change_in_y == -1:
                                 return True
 
         elif current_piece.get_piece() == 'bP':
@@ -466,8 +452,11 @@ def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous
                 if selected_piece_x == 1:
                     # pawn can move one OR two squares
                     if enemy_piece == ' ':
-                        if change_in_x == 1 or change_in_x == 2:
+                        if change_in_x == 1:
                             return True
+                        if change_in_x == 2:
+                            if board[selected_piece_x + 1][selected_piece_y] == ' ':
+                                return True
                 else:
                     # pawn can move one square
                     if enemy_piece == ' ':
@@ -497,7 +486,7 @@ def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous
                         # if the new position of the pawn is 1 row away
                         if change_in_x == 1:
                             # if the position of the pawn will be +-1 col
-                            if abs(change_in_y) == 1:
+                            if change_in_y == 1:
                                 return True
 
 
@@ -1220,6 +1209,8 @@ def obtain_possible_moves_v2(board, previous):
         # 1) can block the path if block_path exists
         # 2) can capture enemy piece unless there are more than 1 piece
 
+        enemy_check_piece = check_pieces[0]
+
         for rows in board:
             for square in rows:
                 if square != ' ' and square.get_player() == 'black':
@@ -1227,6 +1218,11 @@ def obtain_possible_moves_v2(board, previous):
                     for move in square.get_possible_moves():
                         if move in block_path:
                             mover.append(move)
+                        # check if piece can be captured
+                        if len(check_pieces) == 1:
+                            if move in enemy_check_piece.get_position():
+                                if move not in mover:
+                                    mover.append(move)
 
                     # update list of moves
                     square_x, square_y = square.get_position()
@@ -1236,7 +1232,8 @@ def obtain_possible_moves_v2(board, previous):
         # for escape plan, king should be adjusted (if king is allowed any moves or not)
         # three_king_escape returns the kings set of possible moves
         board[black_x][black_y].update_possible_moves(escape_plan)
-        # black king in check!
+
+        # white king in check!
     elif white_king_check is True:
             white_x, white_y = white_king.get_position()
 
@@ -1249,6 +1246,8 @@ def obtain_possible_moves_v2(board, previous):
             # 1) can block the path if block_path exists
             # 2) can capture enemy piece unless there are more than 1 piece
 
+            enemy_check_piece = check_pieces[0]
+
             for rows in board:
                 for square in rows:
                     if square != ' ' and square.get_player() == 'white':
@@ -1256,6 +1255,11 @@ def obtain_possible_moves_v2(board, previous):
                         for move in square.get_possible_moves():
                             if move in block_path:
                                 mover.append(move)
+                            # check if piece can be captured
+                            if len(check_pieces) == 1:
+                                if move in enemy_check_piece.get_position():
+                                    if move not in mover:
+                                        mover.append(move)
 
                         # update list of moves
                         square_x, square_y = square.get_position()
