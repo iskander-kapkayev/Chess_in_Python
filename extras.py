@@ -1,65 +1,69 @@
 from chess_scripts_2 import *
 
-# initialize game pieces and chess board
-chess_board = initialize_chess_board(8)
-obtain_possible_moves_v2(chess_board, None)
+def attempt_one():
+    # initialize game pieces and chess board
+    chess_board = initialize_chess_board(8)
+    obtain_possible_moves_v2(chess_board, None)
 
-print(chess_board)
-# print the possible moves (should only be one)
-for rows in chess_board:
-    for square in rows:
-        if square != ' ' and square.get_player() == 'black':
-            print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+    print(chess_board)
+    # print the possible moves (should only be one)
 
-print('\n ------------ \n')
+    # move wP from 6,1 to 2,3
+    chess_board[2][3] = chess_board[6][1]
+    chess_board[6][1] = ' '
+    chess_board[2][3].update_moved_from((6, 1))
+    chess_board[2][3].update_moved_to((2, 3))
 
-# first move the wP from 6,4 to 4,4
-chess_board[4][4] = chess_board[6][4]
-chess_board[6][4] = ' '
-chess_board[4][4].update_moved_from((6,4))
-chess_board[4][4].update_moved_to((4,4))
-obtain_possible_moves_v2(chess_board, None)
+    # set previous move
+    previous_move = ('white', 'wP', (3, 3), (2, 3))
+    obtain_possible_moves_v2(chess_board, previous_move)
 
-# print the possible moves (should only be one)
-for rows in chess_board:
-    for square in rows:
-        if square != ' ' and square.get_player() == 'black':
-            print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+    # run through every combo of (0,0) to (7,7) to calculate available moves
 
-print('\n ------------ \n')
+    list_of_moves = []
 
-# second move the bP from 1,5 to 2,5
-chess_board[2][5] = chess_board[1][5]
-chess_board[1][5] = ' '
-chess_board[2][5].update_moved_from((1,5))
-chess_board[2][5].update_moved_to((2,5))
-obtain_possible_moves_v2(chess_board, None)
+    print(f'this is the piece in 2,3: {chess_board[2][3]}')
+    for row in range(8):
+        for col in range(8):
+            print(f'checking row: {row} and col: {col}')
 
-# print the possible moves (should only be one)
-for rows in chess_board:
-    for square in rows:
-        if square != ' ' and square.get_player() == 'black':
-            print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+            if legal_path(chess_board, 1, 4, row, col, previous_move):
+                list_of_moves.append((row,col))
+                print(f'---approved! row: {row} and col: {col}')
 
-print('\n ------------ \n')
+    return list_of_moves
 
-# next move the wQ into a check position from 7,3 to 3,7
-chess_board[3][7] = chess_board[7][3]
-chess_board[7][3] = ' '
-chess_board[3][7].update_moved_from((7,3))
-chess_board[3][7].update_moved_to((3,7))
+def attempt_two():
+    # initialize game pieces and chess board
+    chess_board = initialize_chess_board(8)
+    obtain_possible_moves_v2(chess_board, None)
 
-# set previous move
-previous_move = ('white', 'wQ', (7, 3), (3, 7))
+    print(chess_board)
+    # print the possible moves (should only be one)
 
-obtain_possible_moves_v2(chess_board, previous_move)
+    # move bP from 1,4 to 5,4
+    chess_board[5][4] = chess_board[1][4]
+    chess_board[1][4] = ' '
+    chess_board[5][4].update_moved_from((1, 4))
+    chess_board[5][4].update_moved_to((5, 4))
 
-print(chess_board)
+    # set previous move
+    previous_move = ('black', 'bP', (1, 4), (5, 4))
+    obtain_possible_moves_v2(chess_board, previous_move)
 
-# print the possible moves (should only be one)
-for rows in chess_board:
-    for square in rows:
-        if square != ' ' and square.get_player() == 'black':
-            print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+    # run through every combo of (0,0) to (7,7) to calculate available moves
 
-print('\n ------------ \n')
+    list_of_moves = []
+
+    print(f'this is the piece in 5,4: {chess_board[5][4]}')
+    for row in range(8):
+        for col in range(8):
+            print(f'checking row: {row} and col: {col}')
+
+            if legal_path(chess_board, 6, 3, row, col, previous_move):
+                list_of_moves.append((row,col))
+                print(f'---approved! row: {row} and col: {col}')
+
+    return list_of_moves
+
+print(f'{attempt_one()} \n {attempt_two()}')

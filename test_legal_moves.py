@@ -8,7 +8,7 @@ class TestLegalMove(ut.TestCase):
         self.chess_board_scattered = board_for_testing_scattered()
         obtain_possible_moves_v2(self.chess_board_starting, None)
         obtain_possible_moves_v2(self.chess_board_scattered, None)
-    '''
+
     # ---------- testing of legal path function (only considers possible movements for a piece) ----------
     def test_legal_path_pawn(self):
         # starting board checks
@@ -264,12 +264,6 @@ class TestLegalMove(ut.TestCase):
         # re-running the possible moves should show one possibility (pawn block!)
         obtain_possible_moves_v2(self.chess_board_starting, previous_move)
 
-        # print the possible moves (should only be one)
-        for rows in self.chess_board_starting:
-            for square in rows:
-                if square != ' ' and square.get_player() == 'black':
-                    print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
-
         # count number of moves
         self.assertEqual(count_moves(self.chess_board_starting, 1),1, 'in this position, black should only have one move, pawn to 2,4 to block wQ check')
 
@@ -325,15 +319,40 @@ class TestLegalMove(ut.TestCase):
         # re-running the possible moves should show one possibility (pawn block!)
         obtain_possible_moves_v2(self.chess_board_starting, previous_move)
 
+        # count number of moves
+        self.assertEqual(count_moves(self.chess_board_starting, 1), 0,'in this position, black is in checkmate')
+
+    def test_pawn_capture_error(self):
+
+        # move wP from 6,1 to 2,3
+        self.chess_board_starting[2][3] = self.chess_board_starting[6][1]
+        self.chess_board_starting[6][1] = ' '
+        self.chess_board_starting[2][3].update_moved_from((6, 1))
+        self.chess_board_starting[2][3].update_moved_to((2, 3))
+
+        # set previous move
+        previous_move = ('white', 'wP', (6, 1), (2, 3))
+
+        # re-running the possible moves should show one possibility (pawn block!)
+        obtain_possible_moves_v2(self.chess_board_starting, previous_move)
+
+        # this white pawn should be able to be eaten by two black pawns
+        legal_1 = legal_movement(self.chess_board_starting, 1, 2, 2, 3, previous_move)
+        legal_2 = legal_movement(self.chess_board_starting, 1, 4, 2, 3, previous_move)
+
+        print('\n ---------- \n These are the possible moves for pawn capturing \n')
         # print the possible moves (should only be one)
         for rows in self.chess_board_starting:
             for square in rows:
                 if square != ' ' and square.get_player() == 'black':
-                    print(f' The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+                    print(f'The current piece is {square.get_piece()}, '
+                          f'the current position is ({square.get_position()}), '
+                          f'and all the possible moves are: {square.get_possible_moves()}')
 
-        # count number of moves
-        self.assertEqual(count_moves(self.chess_board_starting, 1), 0,'in this position, black is in checkmate')
-    '''
+        # assert truth
+        self.assertTrue(legal_1,'This black pawn should be allowed to capture this white pawn.')
+        self.assertTrue(legal_2, 'This black pawn should also be allowed to capture this white pawn.')
+
     def test_knight_checkmate_error(self):
         # play out a check on the black king with white knight
 
@@ -351,10 +370,13 @@ class TestLegalMove(ut.TestCase):
         obtain_possible_moves_v2(self.chess_board_starting, previous_move)
 
         # print the possible moves (should only be one)
+        print('\n ------------- \n')
         for rows in self.chess_board_starting:
             for square in rows:
                 if square != ' ' and square.get_player() == 'black':
-                    print(f'The current piece is {square.get_piece()}, the current position is ({square.get_position()}), and all the possible moves are: {square.get_possible_moves()}')
+                    print(f'The current piece is {square.get_piece()}, '
+                          f'the current position is ({square.get_position()}), '
+                          f'and all the possible moves are: {square.get_possible_moves()}')
 
         # count number of moves
         self.assertEqual(count_moves(self.chess_board_starting, 1), 2,'in this position, black is NOT in checkmate, black has 2 moves to capture the knight')
