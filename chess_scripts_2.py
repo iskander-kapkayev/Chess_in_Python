@@ -426,7 +426,7 @@ def legal_path(board, selected_piece_x, selected_piece_y, new_x, new_y, previous
                     return True
 
         # either pawn attempting an en passant
-        elif abs(change_in_y) == 1 and abs(change_in_x) == 1 and enemy_piece == ' ':
+        elif abs(change_in_y) == 1 and abs(change_in_x) == 1 and enemy_piece == ' ' and previous is not None:
 
             # each condition must be met in order to allow for an en passant
             prev_color, prev_piece, prev_moved_from, prev_moved_to = previous
