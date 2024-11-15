@@ -875,3 +875,64 @@ def checkmate_trigger(board, previous_move, checked_player):
 
     # if false is not triggered, then return True
     return True
+
+# ---------- this will obtain the possible moves values for each piece after a move is completed  ---------- #
+
+def obtain_possible_moves(board, previous):
+    # this function will cycle through every piece on the chess board
+    # a blank list of possible moves will be created and then passed into ChessPiece class with update_possible_moves(list)
+
+    # this is a chess board size
+    board_size = 8
+
+    # assign some vars before processing
+    black_king = None
+    white_king = None
+
+    for rows in board:
+        for square in rows:
+            # if a piece is in the square
+            if square != ' ':
+                # new list for each piece
+                if square.get_piece() == 'wK':
+                    white_king = square
+                if square.get_piece() == 'bK':
+                    black_king = square
+                list_of_moves = []
+                # set current piece
+                current_piece_x, current_piece_y = square.get_position()
+                #print(f'the current piece x is: {current_piece_x} and the y is: {current_piece_y}')
+                # run through every combo of (0,0) to (7,7) to calculate available moves
+                for row in range(board_size):
+                    for col in range(board_size):
+                        #print(f'this is the row: {row} and the col: {col}')
+                        if legal_movement(board, current_piece_x, current_piece_y, row, col, previous):
+                            list_of_moves.append((row, col))
+                # after looping through the board, set list to chess_piece value
+                square.update_possible_moves(list_of_moves)
+
+    black_king_moves = black_king.get_possible_moves()
+    white_king_moves = white_king.get_possible_moves()
+
+    # assess moves for black king
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'white':
+                    for move in black_king_moves:
+                        if move in square.get_possible_moves():
+                            black_king_moves.remove(move)
+
+    # assess moves for white king
+    for rows in board:
+        for square in rows:
+            if square != ' ':
+                if square.get_player() == 'black':
+                    for move in white_king_moves:
+                        if move in square.get_possible_moves():
+                            white_king_moves.remove(move)
+
+    black_x, black_y = black_king.get_position()
+    white_x, white_y = white_king.get_position()
+    board[black_x][black_y].update_possible_moves(black_king_moves)
+    board[white_x][white_y].update_possible_moves(white_king_moves)

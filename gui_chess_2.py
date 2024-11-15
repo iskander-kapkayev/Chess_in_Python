@@ -1,12 +1,10 @@
-import copy
-
 import pygame
 from chess_scripts_2 import *
 
 from tkinter import *
 from tkinter import messagebox
-Tk().wm_withdraw() #to hide the main window
 
+Tk().wm_withdraw() #to hide the main window
 
 # ---------- this will draw the board ---------- #
 
@@ -55,7 +53,7 @@ square_size = 100 # pixel size
 
 # initialize game pieces and chess board
 chess_board = initialize_chess_board(board_size)
-obtain_possible_moves(chess_board, None)
+obtain_possible_moves_v2(chess_board, None)
 
 # ---------- game loop that will keep working until game ends ---------- #
 
@@ -143,9 +141,9 @@ while running:
                                     selected_piece = None
 
                             # in case of an en passant by pawns
-                            elif ((current_piece.get_piece() == 'bP') or (current_piece.get_piece() == 'wP')
-                                  and (abs(prev_moved_from[0] - prev_moved_from[1]) == 2)
-                                  and (chess_board[row][col] == ' ')):
+                            elif (('P' in current_piece.get_piece() and previous_move is not None)
+                                and ('P' in prev_piece)
+                                and (chess_board[row][col] == ' ')):
 
                                 # perform en passant, obtain new possible moves, obtain check values
                                 if end_en_passant(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
@@ -222,12 +220,6 @@ while running:
             # player being checked must make a move to remove check
             if active_check:
 
-                print(f'\n----------\n')
-
-                # double check every possible move and see if there are moves available
-
-                print(f'the number of moves available: {count_moves(chess_board, player)}')
-
                 if count_moves(chess_board, player) > 0:
 
                     # when piece is selected
@@ -279,9 +271,9 @@ while running:
                                         selected_piece = None
 
                                 # in case of an en passant by pawns
-                                elif ((current_piece.get_piece() == 'bP') or (current_piece.get_piece() == 'wP')
-                                      and (abs(selected_piece[0] - row) == 1 and abs(selected_piece[1] - col) == 1)
-                                      and (chess_board[row][col] == ' ')):
+                                elif (('P' in current_piece.get_piece() and previous_move is not None)
+                                    and ('P' in prev_piece)
+                                    and (chess_board[row][col] == ' ')):
 
                                     # perform en passant, obtain new possible moves, obtain check values
                                     # perform en passant on fake board
@@ -338,12 +330,10 @@ while running:
 
                                     else:
                                         # if accidental self check
-                                        messagebox.showinfo('Illegal Move', f'This puts you in check!')
                                         selected_piece = None
 
                             else:
                                 # if move is not in legal move set
-                                messagebox.showinfo('Illegal Move', f'This piece cannot move there!')
                                 selected_piece = None
 
                         else:

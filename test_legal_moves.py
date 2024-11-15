@@ -229,6 +229,7 @@ class TestLegalMove(ut.TestCase):
         self.assertFalse(legal_check_2, "King will not be allowed to move here")
 
     def test_move_counter(self):
+
         # count the number of moves at the start of the game (should be 20 per color, 8 pawns * 2 moves + 2 knights * 2 moves)
         check_white_moves = count_moves(self.chess_board_starting, 0)
         self.assertEqual(check_white_moves, 20,"There should be 20 moves for each color.")
@@ -340,21 +341,21 @@ class TestLegalMove(ut.TestCase):
         legal_1 = legal_movement(self.chess_board_starting, 1, 2, 2, 3, previous_move)
         legal_2 = legal_movement(self.chess_board_starting, 1, 4, 2, 3, previous_move)
 
-        print('\n ---------- \n These are the possible moves for pawn capturing \n')
-        # print the possible moves (should only be one)
-        for rows in self.chess_board_starting:
-            for square in rows:
-                if square != ' ' and square.get_player() == 'black':
-                    print(f'The current piece is {square.get_piece()}, '
-                          f'the current position is ({square.get_position()}), '
-                          f'and all the possible moves are: {square.get_possible_moves()}')
-
         # assert truth
         self.assertTrue(legal_1,'This black pawn should be allowed to capture this white pawn.')
         self.assertTrue(legal_2, 'This black pawn should also be allowed to capture this white pawn.')
 
     def test_knight_checkmate_error(self):
         # play out a check on the black king with white knight
+
+        # print the possible moves (should only be one)
+        print('\n ------------- \n')
+        for rows in self.chess_board_starting:
+            for square in rows:
+                if square != ' ' and square.get_player() == 'black':
+                    print(f'The current piece is {square.get_piece()}, '
+                          f'the current position is ({square.get_position()}), '
+                          f'and all the possible moves are: {square.get_possible_moves()}')
 
         # move wN from 7,1 to 2,3
         self.chess_board_starting[2][3] = self.chess_board_starting[7][1]
