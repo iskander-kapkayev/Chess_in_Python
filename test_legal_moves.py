@@ -1,6 +1,64 @@
 import unittest as ut
 from chess_scripts_2 import *
 
+# ---------- testing! initialize the starting chess board ---------- #
+
+def board_for_testing():
+    # initialize game pieces and chess board
+    board_size = 8
+    starting_chess_board = initialize_chess_board(board_size)
+    return starting_chess_board
+
+# ---------- testing! initialize the scattered chess board ---------- #
+
+def board_for_testing_scattered():
+    # initialize game pieces and chess board with scattered pieces
+    board_size = 8
+    scattered_chess_board = initialize_chess_board_testing_scattered(board_size)
+    return scattered_chess_board
+
+# ---------- testing! this is a scattered chess board for evaluation ---------- #
+
+def initialize_chess_board_testing_scattered(board_size):
+
+    # create a 2D array to represent the board
+    board = [[' ' for _ in range(board_size)] for _ in range(board_size)]
+
+    # initialize pieces on chess board
+    all_game_pieces = initialize_pieces_testing_scattered()
+    for game_piece in all_game_pieces:
+        x, y = game_piece.get_position()
+        board[x][y] = game_piece
+
+    return board
+
+# ---------- testing! this initializes scattered chess board pieces ---------- #
+
+def initialize_pieces_testing_scattered():
+    pawn_row_black = [ChessPiece('black', 'bP', (3, i), 'pokemon_icons/bP.png') for i in range(8)]
+    pawn_row_white = [ChessPiece('white', 'wP', (4, i), 'pokemon_icons/wP.png') for i in range(8)]
+    back_row_white = [ChessPiece('white', 'wR', (5, 0), 'pokemon_icons/wR.png'),
+                      ChessPiece('white', 'wN', (5, 1), 'pokemon_icons/wN.png'),
+                      ChessPiece('white', 'wB', (5, 2), 'pokemon_icons/wB.png'),
+                      ChessPiece('white', 'wQ', (5, 3), 'pokemon_icons/wQ.png'),
+                      ChessPiece('white', 'wK', (5, 4), 'pokemon_icons/wK.png'),
+                      ChessPiece('white', 'wB', (5, 5), 'pokemon_icons/wB.png'),
+                      ChessPiece('white', 'wN', (5, 6), 'pokemon_icons/wN.png'),
+                      ChessPiece('white', 'wR', (5, 7), 'pokemon_icons/wR.png')
+    ]
+    back_row_black = [ChessPiece('black', 'bR', (2, 0), 'pokemon_icons/bR.png'),
+                      ChessPiece('black', 'bN', (2, 1), 'pokemon_icons/bN.png'),
+                      ChessPiece('black', 'bB', (2, 2), 'pokemon_icons/bB.png'),
+                      ChessPiece('black', 'bQ', (2, 3), 'pokemon_icons/bQ.png'),
+                      ChessPiece('black', 'bK', (2, 4), 'pokemon_icons/bK.png'),
+                      ChessPiece('black', 'bB', (2, 5), 'pokemon_icons/bN.png'),
+                      ChessPiece('black', 'bN', (2, 6), 'pokemon_icons/bB.png'),
+                      ChessPiece('black', 'bR', (2, 7), 'pokemon_icons/bR.png')
+    ]
+
+    all_game_pieces = pawn_row_black + pawn_row_white + back_row_black + back_row_white
+    return all_game_pieces
+
 class TestLegalMove(ut.TestCase):
 
     def setUp(self):

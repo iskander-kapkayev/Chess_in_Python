@@ -936,3 +936,303 @@ def obtain_possible_moves(board, previous):
     white_x, white_y = white_king.get_position()
     board[black_x][black_y].update_possible_moves(black_king_moves)
     board[white_x][white_y].update_possible_moves(white_king_moves)
+
+# ---------- this will break the game cycle for a check ---------- #
+
+def cycle_breaker_check(board, active_check, player):
+    # break the cycle if active check is now gone
+    if active_check is False:
+        # iterate to next player
+        player += 1
+        # reset piece to none
+        selected_piece = None
+        # return new chess board, player count, and None for selection
+        return board, player, selected_piece
+
+# ----- og gui func ----- #
+
+while running:
+
+    for event in pygame.event.get():
+
+
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            row = y // square_size
+            col = x // square_size
+
+            # when not in check, play the game normally
+            if not active_check:
+
+                # when piece is selected
+                if selected_piece:
+
+                    '''
+                    # highlight the square
+                    #highlight_rect = highlight.get_rect(center=((x + 0.5) * square_size, (y + 0.5) * square_size))
+                    #screen.blit(highlight, highlight_rect)
+                    #pygame.display.flip()
+                    '''
+
+                    # set current piece for ease
+                    current_piece = chess_board[selected_piece[0]][selected_piece[1]]
+
+                    # set current player for ease
+                    current_player = current_piece.get_player()
+
+                    # make sure players go in order: W, B, W, B, etc.
+                    if((current_player == 'white' and player % 2 == 0)
+                            or (current_player == 'black' and player % 2 == 1)):
+
+                        # make sure a legal move is selected from possible moves list
+                        if (row, col) in current_piece.get_possible_moves():
+
+                            # in case of a king's castle
+                            if (((current_piece.get_piece() == 'wK')
+                                 or (current_piece.get_piece() == 'bK'))
+                                    and (abs(selected_piece[1] - col) == 2)):
+
+                                # double check king movement logic to not pass through a check
+                                if end_castle(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                    # track previous move made
+                                    previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                    # iterate to next player
+                                    player += 1
+
+                                    # update checks for black/white
+                                    black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                    # update active_check, should return true if the new iterated player is in check
+                                    active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                    # print to console
+                                    print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                    # reset piece
+                                    selected_piece = None
+
+                                else:
+                                    # not legal castle
+                                    messagebox.showinfo('Illegal Castle', f'This castle is illegal, try again!')
+                                    selected_piece = None
+
+                            # in case of an en passant by pawns
+                            elif (('P' in current_piece.get_piece() and previous_move is not None)
+                                and ('P' in prev_piece)
+                                and (chess_board[row][col] == ' ')):
+
+                                # perform en passant, obtain new possible moves, obtain check values
+                                if end_en_passant(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                    # track previous move made
+                                    previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                    # iterate to next player
+                                    player += 1
+
+                                    # update checks for black/white
+                                    black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                    # update active_check, should return true if the new iterated player is in check
+                                    active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                    # print to console
+                                    print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                    # reset piece
+                                    selected_piece = None
+
+                                else:
+                                    # if accidental self check
+                                    messagebox.showinfo('Illegal En Passant', f'This en passant is illegal, try again!')
+                                    selected_piece = None
+
+                            else:
+
+                                # perform any legal move, obtain new possible moves, obtain check values
+                                if end_any_move(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                    # track previous move made
+                                    previous_move = retain_prev_move(chess_board, row, col)
+                                    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                    # iterate to next player
+                                    player += 1
+
+                                    # update checks for black/white
+                                    black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                    # update active_check, should return true if the new iterated player is in check
+                                    active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                    # print to console
+                                    print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                    # reset piece
+                                    selected_piece = None
+
+                                else:
+                                    # if accidental self check
+                                    messagebox.showinfo('Illegal Move', f'This move is not legal!')
+                                    selected_piece = None
+
+                        else:
+                            # if move is not in legal move set
+                            messagebox.showinfo('Illegal Move', f'This piece cannot move here!')
+                            selected_piece = None
+
+                    else:
+                        # if wrong color
+                        selected_piece = None
+
+                elif not selected_piece:
+                    # this is where the reset piece points to, do not allow blank spaces to be selected
+                    if chess_board[row][col] != ' ':
+                        selected_piece = (row, col)
+
+
+            # now the game enters check phase
+            # player being checked must make a move to remove check
+            if active_check:
+
+                if count_moves(chess_board, player) > 0:
+
+                    # when piece is selected
+                    if selected_piece:
+
+                        # set current piece for ease
+                        current_piece = chess_board[selected_piece[0]][selected_piece[1]]
+
+                        # set current player for ease
+                        current_player = current_piece.get_player()
+
+                        # make sure players go in order: W, B, W, B, etc.
+                        if ((current_player == 'white' and player % 2 == 0)
+                                or (current_player == 'black' and player % 2 == 1)):
+
+                            # make sure a legal move is selected from possible moves list
+                            if (row, col) in current_piece.get_possible_moves():
+
+                                # in case of a king's castle
+                                if (((current_piece.get_piece() == 'wK') or (current_piece.get_piece() == 'bK'))
+                                        and (abs(selected_piece[1] - col) == 2)):
+
+                                    # double check king movement logic to not pass through a check
+                                    # double check king movement logic to not pass through a check
+                                    if end_castle(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                        # track previous move made
+                                        previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                        # iterate to next player
+                                        player += 1
+
+                                        # update checks for black/white
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                        # update active_check, should return true if the new iterated player is in check
+                                        active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                        # print to console
+                                        print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                        # reset piece
+                                        selected_piece = None
+
+                                    else:
+                                        # not legal castle
+                                        messagebox.showinfo('Illegal Move', f'Does not remove you from check!')
+                                        selected_piece = None
+
+                                # in case of an en passant by pawns
+                                elif (('P' in current_piece.get_piece() and previous_move is not None)
+                                    and ('P' in prev_piece)
+                                    and (chess_board[row][col] == ' ')):
+
+                                    # perform en passant, obtain new possible moves, obtain check values
+                                    # perform en passant on fake board
+                                    # perform en passant, obtain new possible moves, obtain check values
+                                    if end_en_passant(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                        # track previous move made
+                                        previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                        # iterate to next player
+                                        player += 1
+
+                                        # update checks for black/white
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                        # update active_check, should return true if the new iterated player is in check
+                                        active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                        # print to console
+                                        print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                        # reset piece
+                                        selected_piece = None
+
+                                    else:
+                                        # if accidental self check
+                                        messagebox.showinfo('Illegal Move', f'This puts you in check!')
+                                        selected_piece = None
+
+                                else:
+
+                                    # perform any legal move, obtain new possible moves, obtain check values
+                                    if end_any_move(chess_board, selected_piece[0], selected_piece[1], row, col, current_player):
+
+                                        # track previous move made
+                                        previous_move = retain_prev_move(chess_board, row, col)
+                                        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
+
+                                        # iterate to next player
+                                        player += 1
+
+                                        # update checks for black/white
+                                        black_king_check, white_king_check = player_check_logic(chess_board)
+
+                                        # update active_check, should return true if the new iterated player is in check
+                                        active_check = active_check_lookup(player, black_king_check, white_king_check)
+
+                                        # print to console
+                                        print(f'{current_player} just played his {current_piece.get_piece()} from {(selected_piece[0], selected_piece[1])} to {(row, col)}')
+
+                                        # reset piece
+                                        selected_piece = None
+
+                                    else:
+                                        # if accidental self check
+                                        selected_piece = None
+
+                            else:
+                                # if move is not in legal move set
+                                selected_piece = None
+
+                        else:
+                            # if wrong color
+                            selected_piece = None
+
+                    elif not selected_piece:
+                        # this is where the reset piece points to, do not allow blank spaces to be selected
+                        if chess_board[row][col] != ' ':
+                            selected_piece = (row, col)
+
+                else:
+                    # there are no more possible moves! end the game
+                    messagebox.showinfo('CHECKMATE', f'There are no more possible moves. Player {player % 2 + 1} WINS!!')
+                    running = False
+
+    # this will draw the board each time
+    draw_board()
+    pygame.display.flip()
+
+pygame.quit()
