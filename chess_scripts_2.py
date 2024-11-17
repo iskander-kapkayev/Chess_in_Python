@@ -896,7 +896,7 @@ def pawn_promotion(current_piece, current_player, new_x, new_y):
     if current_piece == 'wP' and current_player == 'white':
         for i in range(8):
             if (new_x, new_y) == (0, i):
-                # pawn has reached promotion!
+                # pawn has reached p  romotion!
                 return True
 
     elif current_piece == 'bP' and current_player == 'black':
@@ -1207,7 +1207,7 @@ def one_block_check_moves(board, checked_player):
         # up
         if change_in_x < 0:
             for i in range(-1, change_in_x, -1):
-                path.append((king_x - i, king_y))
+                path.append((king_x + i, king_y))
         # down
         elif change_in_x > 0:
             for i in range(1, change_in_x, 1):
@@ -1217,7 +1217,7 @@ def one_block_check_moves(board, checked_player):
         # left
         if change_in_y < 0:
             for i in range(-1, change_in_y, -1):
-                path.append((king_x, king_y - i))
+                path.append((king_x, king_y + i))
         # right
         elif change_in_y > 0:
             for i in range(1, change_in_y, 1):

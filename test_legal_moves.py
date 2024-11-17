@@ -382,6 +382,47 @@ class TestLegalMove(ut.TestCase):
         # count number of moves
         self.assertEqual(count_moves(self.chess_board_starting, 1), 2,'in this position, black is NOT in checkmate, black has 2 moves to capture the knight')
 
+    def test_queen_checkmate_error(self):
+        # play out a check on the black king with white knight
+
+        # print the possible moves (should only be one)
+        print('\n ------------- \n')
+        for rows in self.chess_board_starting:
+            for square in rows:
+                if square != ' ' and square.get_player() == 'black':
+                    print(f'The current piece is {square.get_piece()}, '
+                          f'the current position is ({square.get_position()}), '
+                          f'and all the possible moves are: {square.get_possible_moves()}')
+
+        # set no pawns in front of Ks
+        self.chess_board_starting[6][4] = ' '
+        self.chess_board_starting[1][4] = ' '
+
+        # move black queen to check
+        self.chess_board_starting[1][4] = self.chess_board_starting[0][3]
+        self.chess_board_starting[0][3] = ' '
+        self.chess_board_starting[1][4].update_moved_from((0, 3))
+        self.chess_board_starting[1][4].update_moved_to((1, 4))
+
+        # set previous move
+        previous_move = ('black', 'bQ', (0, 3), (1, 4))
+
+        # white king is in check!
+        # re-running the possible moves should show a few blocks  (3)
+        obtain_possible_moves_v2(self.chess_board_starting, previous_move)
+
+        # print the possible moves (should only be one)
+        print('\n ------------- \n')
+        for rows in self.chess_board_starting:
+            for square in rows:
+                if square != ' ' and square.get_player() == 'white':
+                    print(f'The current piece is {square.get_piece()}, '
+                          f'the current position is ({square.get_position()}), '
+                          f'and all the possible moves are: {square.get_possible_moves()}')
+
+        # count number of moves
+        self.assertEqual(count_moves(self.chess_board_starting, 2), 3,'in this position, white is NOT in checkmate, white can block with 3 pieces')
+
 
 if __name__ == "__main__":
     ut.main()

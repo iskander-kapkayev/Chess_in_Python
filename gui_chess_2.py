@@ -43,7 +43,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 green = (170, 196, 172)
 red = (255, 0, 0)
-green_alt = "#AAC4AC"
+green_alt = '#AAC4AC'
 mimi_pink = '#EDCDE3'
 pink_lavender = '#D0A6B4'
 
@@ -63,8 +63,10 @@ selected_piece = None # this will represent the X, Y coordinate of the selected 
 player = 0 # mod 2 will return 0 or 1, player white or black
 active_check = False # tells the game to focus on a player
 
+'''
 # create a highlight
 highlight = pygame.image.load('pokemon_icons/wQ.png')
+'''
 
 while running:
 
