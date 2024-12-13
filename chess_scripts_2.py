@@ -827,10 +827,10 @@ def en_passant(board, selected_x, selected_y, new_x, new_y):
     # capture the pawn by en passant
     if board[new_x][new_y].get_piece() == 'bP':
         # if black, pawn to capture is above it
-        board[new_x - 1][new_y] = ' '
+        board[new_x][new_y - 1] = ' '
     elif board[new_x][new_y].get_piece() == 'wP':
         # if white, pawn to capture is below it
-        board[new_x + 1][new_y] = ' '
+        board[new_x][new_y + 1] = ' '
 
     # update the moved_to and moved_from positions in the chess piece class
     board[new_x][new_y].update_moved_to((new_x, new_y))
