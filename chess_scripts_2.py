@@ -820,17 +820,20 @@ def count_moves(board, player):
 # ---------- gui functions - perform an en passant ---------- #
 
 def en_passant(board, selected_x, selected_y, new_x, new_y):
+    # selected piece color
+    color =  board[selected_x][selected_y].get_player()
+    
     # perform en passant
     board[new_x][new_y] = board[selected_x][selected_y]
     board[selected_x][selected_y] = ' '
 
     # capture the pawn by en passant
-    if board[new_x][new_y].get_piece() == 'bP':
+    if color == 'black':
         # if black, pawn to capture is above it
-        board[new_x][new_y - 1] = ' '
-    elif board[new_x][new_y].get_piece() == 'wP':
+        board[new_x - 1][new_y] = ' '
+    else color == 'white':
         # if white, pawn to capture is below it
-        board[new_x][new_y + 1] = ' '
+        board[new_x + 1][new_y] = ' '
 
     # update the moved_to and moved_from positions in the chess piece class
     board[new_x][new_y].update_moved_to((new_x, new_y))
