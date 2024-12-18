@@ -1389,7 +1389,7 @@ def evaluate_action(chess_board, selected_piece_x, selected_piece_y, row, col, p
 
     # in case of an en passant by pawns
     elif (('P' in current_piece.get_piece() and previous_move is not None)
-          and ('P' in prev_piece.get_piece())
+          and ('P' in prev_piece)
           and (chess_board[row][col] == ' ')):
 
         # perform en passant, obtain new possible moves, obtain check values
