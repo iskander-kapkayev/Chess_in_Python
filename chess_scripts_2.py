@@ -1375,6 +1375,9 @@ def evaluate_action(chess_board, selected_piece_x, selected_piece_y, row, col, p
     # set current piece and current player
     current_piece = chess_board[selected_piece_x][selected_piece_y]
     current_player = current_piece.get_player()
+
+    if previous_move is not None:
+        prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
     
     # in case of a king's castle
     if ('K' in current_piece.get_piece()
@@ -1386,7 +1389,7 @@ def evaluate_action(chess_board, selected_piece_x, selected_piece_y, row, col, p
 
     # in case of an en passant by pawns
     elif (('P' in current_piece.get_piece() and previous_move is not None)
-          and ('P' in prev_piece)
+          and ('P' in prev_piece.get_piece())
           and (chess_board[row][col] == ' ')):
 
         # perform en passant, obtain new possible moves, obtain check values
@@ -1410,7 +1413,6 @@ def perform_action_ending(chess_board, selected_piece_x, selected_piece_y, row, 
 
     # track previous move made
     previous_move = retain_prev_move(chess_board, row, col)
-    prev_color, prev_piece, prev_moved_from, prev_moved_to = previous_move
 
     # iterate to next player
     player += 1
@@ -1428,4 +1430,4 @@ def perform_action_ending(chess_board, selected_piece_x, selected_piece_y, row, 
     # reset piece
     selected_piece = None
 
-    return prev_color, prev_piece, prev_moved_from, prev_moved_to, player, black_king_check, white_king_check, active_check, selected_piece
+    return previous_move, player, black_king_check, white_king_check, active_check, selected_piece
