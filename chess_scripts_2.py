@@ -831,7 +831,7 @@ def en_passant(board, selected_x, selected_y, new_x, new_y):
     if color == 'black':
         # if black, pawn to capture is above it
         board[new_x - 1][new_y] = ' '
-    else color == 'white':
+    elif color == 'white':
         # if white, pawn to capture is below it
         board[new_x + 1][new_y] = ' '
 
