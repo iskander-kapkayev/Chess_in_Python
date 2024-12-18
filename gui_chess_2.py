@@ -99,8 +99,7 @@ while running:
 
                             # evaluate move and apply end of move actions
                             if evaluate_action(chess_board, selected_piece[0], selected_piece[1], row, col, previous_move):
-                                (prev_color, prev_piece, prev_moved_from,
-                                 prev_moved_to, player, black_king_check,
+                                (previous_move, player, black_king_check,
                                  white_king_check, active_check, selected_piece) = perform_action_ending(
                                     chess_board, selected_piece[0], selected_piece[1], row, col, player)
 
@@ -145,8 +144,7 @@ while running:
 
                                 # evaluate move and apply end of move actions
                                 if evaluate_action(chess_board, selected_piece[0], selected_piece[1], row, col, previous_move):
-                                    (prev_color, prev_piece, prev_moved_from,
-                                     prev_moved_to, player, black_king_check,
+                                    (previous_move, player, black_king_check,
                                      white_king_check, active_check, selected_piece) = perform_action_ending(
                                         chess_board, selected_piece[0], selected_piece[1], row, col, player)
 
